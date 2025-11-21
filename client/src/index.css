@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+  --red-950: #450a0a;
+}
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+@layer utilities {
+  .gradient-red-primary {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  }
+  
+  .gradient-red-soft {
+    background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
+  }
+  
+  .gradient-red-intense {
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  }
+  
+  .gradient-red-radial {
+    background: radial-gradient(circle, #ef4444 0%, #991b1b 100%);
+  }
+  
+  .text-gradient-red {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+
+    --muted: 0 40% 96%;
+    --muted-foreground: 0 20% 40%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --border: 0 30% 91%;
+    --input: 0 30% 91%;
+
+    --card: transparent;
+    --card-foreground: 0 0% 10%;
+
+    --primary: 0 70% 50%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 40% 95%;
+    --secondary-foreground: 0 0% 10%;
+
+    --accent: 0 40% 95%;
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 0 60% 60%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 70% 5%;
+    --foreground: 0 30% 90%;
+
+    --muted: 0 50% 12%;
+    --muted-foreground: 0 20% 55%;
+
+    --accent: 0 35% 18%;
+    --accent-foreground: 0 0% 98%;
+
+    --popover: 0 70% 5%;
+    --popover-foreground: 0 20% 65%;
+
+    --border: 0 35% 18%;
+    --input: 0 35% 18%;
+
+    --card: transparent;
+    --card-foreground: 0 30% 90%;
+
+    --primary: 0 40% 95%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 50% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 0 35% 18%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
