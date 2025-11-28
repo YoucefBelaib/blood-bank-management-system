@@ -1,7 +1,7 @@
 import React from "react";
-import BarChartComponent from "@/components/Barchart";
-import PieChartComponent from "@/components/piechart";
-import LineChartComponent from "@/components/linechart";
+import BarChartComponent from "@/components/stats/Barchart";
+import PieChartComponent from "@/components/stats/piechart";
+import LineChartComponent from "@/components/stats/linechart";
 
 const Dashboard: React.FC = () => {
   return (
