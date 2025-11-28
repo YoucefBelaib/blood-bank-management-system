@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "wouter";
 
 type Donor = {
   id: number;
@@ -40,17 +41,17 @@ export default function DonorView() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"
-              className="pl-10 pr-4 py-2 rounded-full border border-transparent bg-[#F8F6F6] text-sm w-64 focus:outline-none focus:ring-2 focus:ring-[#F5D6D8]"
+              className="pl-10 pr-4 py-2 rounded-full border border-transparent bg-[#F0F0F0] text-sm w-64 focus:outline-none focus:ring-2 focus:ring-[#F5D6D8]"
             />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21l-4.35-4.35" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 21l-4.35-4.35" stroke="#8e95a0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="11" cy="11" r="6" stroke="#9CA3AF" strokeWidth="2" />
               </svg>
             </div>
           </div>
-
-          <button className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center text-gray-500">⋯</button>
+          <Link href="/donors/add" className="px-5 h-10 rounded-full bg-[#F0F0F0] flex items-center justify-center text-gray-700">Add</Link>
+          <button className="w-10 h-10 rounded-full bg-[#F0F0F0] flex items-center justify-center text-gray-700">⋯</button>
         </div>
       </div>
 
