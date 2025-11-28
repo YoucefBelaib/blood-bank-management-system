@@ -10,10 +10,9 @@ import Home from "@/pages/Home";
 import About from "@/pages/About";
 import DonateBlood from "@/pages/DonateBlood";
 import RequestBlood from "@/pages/RequestBlood";
-import Login from "@/pages/Login";
-import Signup from "@/pages/Signup";
-import AdminDashboard from "@/pages/AdminDashboard";
-import DonorDashboard from "@/pages/DonorDashboard";
+import Dashboard from "./pages/Dashboard";
+import DonorsList from "./pages/DonorsList";
+import Layout from "./components/layout";
 
 function Router() {
   return (
@@ -22,10 +21,8 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/donate" component={DonateBlood} />
       <Route path="/request" component={RequestBlood} />
-      <Route path="/login" component={Login} />
-      <Route path="/signup" component={Signup} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/dashboard" component={DonorDashboard} />
+      <Route path="/admin"> <Layout> <Dashboard /> </Layout> </Route>
+      <Route path="/donors"> <Layout> <DonorsList /> </Layout> </Route>
       <Route component={NotFound} />
     </Switch>
   );

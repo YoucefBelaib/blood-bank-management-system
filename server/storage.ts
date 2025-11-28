@@ -35,19 +35,9 @@ export const db = pool ? drizzle({ client: pool }) : null as any;
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(username: string, password: string, email?: string, role?: string): Promise<User>;
-  validatePassword(password: string, hashedPassword: string): Promise<boolean>;
-  createSession(userId: string): Promise<Session>;
-  getSession(token: string): Promise<Session | undefined>;
-  deleteSession(token: string): Promise<void>;
-  updateUserLastLogin(userId: string): Promise<void>;
-  getAllUsers(): Promise<User[]>;
-  approveUser(userId: string, adminId: string): Promise<User | undefined>;
-  createDonor(donor: InsertDonor, userId?: string): Promise<Donor>;
-  getDonors(): Promise<Donor[]>;
-  getDonorsByUserId(userId: string): Promise<Donor[]>;
-  approveDonor(donorId: string, adminId: string): Promise<Donor | undefined>;
-  rejectDonor(donorId: string, adminId: string): Promise<Donor | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  createDonor(donor: InsertDonor): Promise<Donor>;
+  getAllDonors(): Promise<Donor[]>;
   getBloodInventory(): Promise<BloodInventory[]>;
   updateBloodInventory(bloodType: string, changeAmount: number, adminId: string, reason?: string): Promise<BloodInventory | undefined>;
   getInventoryLogs(): Promise<InventoryLog[]>;
@@ -191,14 +181,9 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async rejectDonor(donorId: string, adminId: string): Promise<Donor | undefined> {
+  async getAllDonors(): Promise<Donor[]> {
     const database = this.ensureDb();
-    const result = await database.update(donors).set({
-      status: "rejected",
-      approvedBy: adminId,
-      approvedAt: new Date(),
-    }).where(eq(donors.id, donorId)).returning();
-    return result[0];
+    return await database.select().from(donors);
   }
 
   async getBloodInventory(): Promise<BloodInventory[]> {
