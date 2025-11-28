@@ -1,27 +1,28 @@
 import React, { useState } from "react";
 
-type Donor = {
+type Request = {
   id: number;
   name: string;
   date: string;
   blood: string;
+  number: number;
   status: "In Progress" | "Complete" | "Pending" | "Approved" | "Rejected";
   avatar?: string;
 };
 
-const SAMPLE_DATA: Donor[] = [
-  { id: 1, name: "ByeWind", date: "Jun 24, 2025", blood: "O+", status: "In Progress", avatar: "https://i.pravatar.cc/40?img=32" },
-  { id: 2, name: "Natali Craig", date: "Mar 10, 2025", blood: "O+", status: "Complete", avatar: "https://i.pravatar.cc/40?img=5" },
-  { id: 3, name: "Drew Cano", date: "Nov 10, 2025", blood: "A-", status: "Pending", avatar: "https://i.pravatar.cc/40?img=12" },
-  { id: 4, name: "Orlando Diggs", date: "Dec 20, 2025", blood: "A+", status: "Approved", avatar: "https://i.pravatar.cc/40?img=7" },
-  { id: 5, name: "Andi Lane", date: "Jul 25, 2025", blood: "AB+", status: "Rejected", avatar: "https://i.pravatar.cc/40?img=45" },
-  { id: 6, name: "Natali Craig", date: "Mar 10, 2025", blood: "AB-", status: "Complete", avatar: "https://i.pravatar.cc/40?img=5" },
-  { id: 7, name: "Drew Cano", date: "Nov 10, 2025", blood: "A+", status: "Pending", avatar: "https://i.pravatar.cc/40?img=12" },
-  { id: 8, name: "Orlando Diggs", date: "Dec 20, 2025", blood: "O+", status: "Approved", avatar: "https://i.pravatar.cc/40?img=7" },
-  { id: 9, name: "Andi Lane", date: "Jul 25, 2025", blood: "A+", status: "Rejected", avatar: "https://i.pravatar.cc/40?img=45" },
+const SAMPLE_DATA: Request[] = [
+  { id: 1, name: "Howarie Boumediene Hospital", date: "Jun 24, 2025", blood: "O+", number: 15, status: "In Progress", avatar: "https://i.pravatar.cc/40?img=32" },
+  { id: 2, name: "Hopital de Annaba", date: "Mar 10, 2025", blood: "O+", number: 15, status: "Complete", avatar: "https://i.pravatar.cc/40?img=5" },
+  { id: 3, name: "Hopital de Setif", date: "Nov 10, 2025", blood: "A-", number: 15, status: "Pending", avatar: "https://i.pravatar.cc/40?img=12" },
+  { id: 4, name: "Borj El Mouraqaba Clinic", date: "Dec 20, 2025", blood: "A+", number: 15,status: "Approved", avatar: "https://i.pravatar.cc/40?img=7" },
+  { id: 5, name: "Andi Lane", date: "Jul 25, 2025", blood: "AB+", number: 15, status: "Rejected", avatar: "https://i.pravatar.cc/40?img=45" },
+  { id: 6, name: "Natali Craig", date: "Mar 10, 2025", blood: "AB-", number: 15, status: "Complete", avatar: "https://i.pravatar.cc/40?img=5" },
+  { id: 7, name: "Drew Cano", date: "Nov 10, 2025", blood: "A+", number: 15, status: "Pending", avatar: "https://i.pravatar.cc/40?img=12" },
+  { id: 8, name: "Orlando Diggs", date: "Dec 20, 2025", blood: "O+", number: 15, status: "Approved", avatar: "https://i.pravatar.cc/40?img=7" },
+  { id: 9, name: "Andi Lane", date: "Jul 25, 2025", blood: "A+", number: 15, status: "Rejected", avatar: "https://i.pravatar.cc/40?img=45" },
 ];
 
-function statusClasses(status: Donor["status"]) {
+function statusClasses(status: Request["status"]) {
   switch (status) {
     case "In Progress":
       return "bg-gray-200 text-gray-800";
@@ -38,7 +39,7 @@ function statusClasses(status: Donor["status"]) {
   }
 }
 
-export default function DonorView() {
+export default function RequestsView() {
   const [query, setQuery] = useState("");
 
   const filtered = SAMPLE_DATA.filter((d) =>
@@ -46,9 +47,9 @@ export default function DonorView() {
   );
 
   return (
-    <div className="w-full bg-white rounded-3xl p-6 shadow-sm">
+    <div className="w-full bg-gray-50 rounded-3xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-[#0f172a]">Donors info</h2>
+        <h2 className="text-2xl font-semibold text-[#0f172a]">Requests</h2>
 
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -72,10 +73,11 @@ export default function DonorView() {
 
       <div className="w-full overflow-hidden">
         <div className="grid grid-cols-12 gap-4 text-sm text-gray-500 px-2 py-2">
-          <div className="col-span-5">Donor Name</div>
+          <div className="col-span-5">Hospital Name</div>
           <div className="col-span-2">Date</div>
-          <div className="col-span-2">Blood Type</div>
-          <div className="col-span-3 text-right">Status</div>
+          <div className="col-span-1">Blood Type</div>
+          <div className="col-span-2 text-center">Units Number</div>
+          <div className="col-span-2 text-right">Status</div>
         </div>
 
         <div className="flex flex-col gap-3 mt-2">
@@ -91,9 +93,11 @@ export default function DonorView() {
 
               <div className="col-span-2 text-sm text-gray-700">{d.date}</div>
 
-              <div className="col-span-2 text-sm text-gray-700">{d.blood}</div>
+              <div className="col-span-1 text-sm text-gray-700">{d.blood}</div>
 
-              <div className="col-span-3 flex justify-end">
+              <div className="col-span-2 text-sm text-gray-700 text-center">{d.number}</div>
+
+              <div className="col-span-2 flex justify-end">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusClasses(d.status)}`}>{d.status}</span>
               </div>
             </div>

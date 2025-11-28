@@ -11,7 +11,8 @@ import DonateBlood from "@/pages/DonateBlood";
 import RequestBlood from "@/pages/RequestBlood";
 import Dashboard from "./pages/Dashboard";
 import Layout from "./components/layout";
-import DonorView from "./components/donorview";
+import DonorView from "./components/DonorsView";
+import RequestsView from "./components/RequestsView";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/request" component={RequestBlood} />
       <Route path="/admin"> <Layout> <Dashboard /> </Layout> </Route>
       <Route path="/donors"> <Layout> <DonorView/> </Layout> </Route>
+      <Route path="/requests"> <Layout> <RequestsView/> </Layout> </Route>
       <Route component={NotFound} />
     </Switch>
   );

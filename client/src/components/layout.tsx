@@ -73,16 +73,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            <Link href="/blog">
+            <Link href="/requests">
               <div
-                aria-current={isActive("/blog") ? "page" : undefined}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/blog") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
+                aria-current={isActive("/requests") ? "page" : undefined}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/requests") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="5" y="4" width="14" height="16" rx="2" fill="#A30000" />
                   <path d="M7 8h10v2H7V8z" fill="#fff" opacity="0.08" />
                 </svg>
-                <span className="text-base tracking-wide">Blog</span>
+                <span className="text-base tracking-wide">Requests</span>
               </div>
             </Link>
           </div>
