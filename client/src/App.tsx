@@ -10,6 +10,7 @@ import About from "@/pages/About";
 import DonateBlood from "@/pages/DonateBlood";
 import RequestBlood from "@/pages/RequestBlood";
 import Dashboard from "./pages/Dashboard";
+import DonorsList from "./pages/DonorsList";
 import Layout from "./components/layout";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/donate" component={DonateBlood} />
       <Route path="/request" component={RequestBlood} />
       <Route path="/admin"> <Layout> <Dashboard /> </Layout> </Route>
+      <Route path="/donors"> <Layout> <DonorsList /> </Layout> </Route>
       <Route component={NotFound} />
     </Switch>
   );

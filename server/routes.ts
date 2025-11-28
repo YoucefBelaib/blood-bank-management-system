@@ -23,6 +23,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/donors", async (_req, res) => {
+    try {
+      const donors = await storage.getAllDonors();
+      res.json(donors);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/donors", async (req, res) => {
     try {
       const result = insertDonorSchema.safeParse(req.body);

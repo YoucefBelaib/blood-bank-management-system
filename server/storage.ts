@@ -31,6 +31,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   createDonor(donor: InsertDonor): Promise<Donor>;
+  getAllDonors(): Promise<Donor[]>;
   getBloodInventory(): Promise<BloodInventory[]>;
   getStatistics(): Promise<Statistics | undefined>;
   createBloodRequest(request: InsertBloodRequest): Promise<BloodRequest>;
@@ -82,6 +83,11 @@ export class DatabaseStorage implements IStorage {
     }
     
     return result[0];
+  }
+
+  async getAllDonors(): Promise<Donor[]> {
+    const database = this.ensureDb();
+    return await database.select().from(donors);
   }
 
   async getBloodInventory(): Promise<BloodInventory[]> {
