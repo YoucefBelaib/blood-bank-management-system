@@ -37,52 +37,64 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Link href="/donors">
               <div
                 aria-current={isActive("/donors") ? "page" : undefined}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/donors") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out relative ${isActive("/donors") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" fill="#A30000" />
                   <path d="M4 20c0-4 4-6 8-6s8 2 8 6v1H4v-1z" fill="#A30000" />
                 </svg>
                 <span className="text-base tracking-wide">Donors</span>
+                {isActive("/donors") && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A30000] rounded-full"></div>
+                )}
               </div>
             </Link>
 
             <Link href="/hospitals">
               <div
                 aria-current={isActive("/hospitals") ? "page" : undefined}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/hospitals") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out relative ${isActive("/hospitals") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="3" y="7" width="18" height="13" rx="2" fill="#A30000" />
                   <path d="M7 11h2v2H7v-2z" fill="#fff" opacity="0.08" />
                 </svg>
                 <span className="text-base tracking-wide">Hospitals</span>
+                {isActive("/hospitals") && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A30000] rounded-full"></div>
+                )}
               </div>
             </Link>
 
             <Link href="/analysis">
               <div
                 aria-current={isActive("/analysis") ? "page" : undefined}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/analysis") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out relative ${isActive("/analysis") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6 2h12v4H6z" fill="#A30000" />
                   <path d="M4 8h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" fill="#A30000" />
                 </svg>
                 <span className="text-base tracking-wide">Analysis</span>
+                {isActive("/analysis") && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A30000] rounded-full"></div>
+                )}
               </div>
             </Link>
 
             <Link href="/blog">
               <div
                 aria-current={isActive("/blog") ? "page" : undefined}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/blog") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out relative ${isActive("/blog") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="5" y="4" width="14" height="16" rx="2" fill="#A30000" />
                   <path d="M7 8h10v2H7V8z" fill="#fff" opacity="0.08" />
                 </svg>
                 <span className="text-base tracking-wide">Blog</span>
+                {isActive("/blog") && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A30000] rounded-full"></div>
+                )}
               </div>
             </Link>
           </div>

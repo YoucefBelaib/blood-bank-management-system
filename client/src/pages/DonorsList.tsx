@@ -62,134 +62,17 @@ const formatDate = (date: Date | string): string => {
   });
 };
 
-// TODO: Remove this dummy data once database is connected
-const DUMMY_DONORS: Donor[] = [
-  {
-    id: "1",
-    fullName: "ByeWind",
-    age: 28,
-    gender: "male",
-    bloodType: "O+",
-    location: "Algiers, Algeria",
-    phone: "+213555111222",
-    email: "byewind@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-06-24"),
-  },
-  {
-    id: "2",
-    fullName: "Natali Craig",
-    age: 34,
-    gender: "female",
-    bloodType: "O+",
-    location: "Oran, Algeria",
-    phone: "+213555222333",
-    email: "natali.craig@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-03-10"),
-  },
-  {
-    id: "3",
-    fullName: "Drew Cano",
-    age: 26,
-    gender: "male",
-    bloodType: "A-",
-    location: "Constantine, Algeria",
-    phone: "+213555333444",
-    email: "drew.cano@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-11-10"),
-  },
-  {
-    id: "4",
-    fullName: "Orlando Diggs",
-    age: 42,
-    gender: "male",
-    bloodType: "A+",
-    location: "Annaba, Algeria",
-    phone: "+213555444555",
-    email: "orlando.diggs@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-12-20"),
-  },
-  {
-    id: "5",
-    fullName: "Andi Lane",
-    age: 31,
-    gender: "female",
-    bloodType: "AB+",
-    location: "Blida, Algeria",
-    phone: "+213555555666",
-    email: "andi.lane@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-07-25"),
-  },
-  {
-    id: "6",
-    fullName: "Kate Morrison",
-    age: 29,
-    gender: "female",
-    bloodType: "B+",
-    location: "Tlemcen, Algeria",
-    phone: "+213555666777",
-    email: "kate.morrison@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-03-10"),
-  },
-  {
-    id: "7",
-    fullName: "Koray Okumus",
-    age: 37,
-    gender: "male",
-    bloodType: "O-",
-    location: "Setif, Algeria",
-    phone: "+213555777888",
-    email: "koray.okumus@example.dz",
-    isActive: false,
-    createdAt: new Date("2025-11-10"),
-  },
-  {
-    id: "8",
-    fullName: "Phoenix Baker",
-    age: 25,
-    gender: "male",
-    bloodType: "AB-",
-    location: "Batna, Algeria",
-    phone: "+213555888999",
-    email: "phoenix.baker@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-12-20"),
-  },
-  {
-    id: "9",
-    fullName: "Lana Steiner",
-    age: 33,
-    gender: "female",
-    bloodType: "A+",
-    location: "Bejaia, Algeria",
-    phone: "+213555999000",
-    email: "lana.steiner@example.dz",
-    isActive: true,
-    createdAt: new Date("2025-07-25"),
-  },
-];
-
 const DonorsList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDonor, setSelectedDonor] = useState<DonorWithStatus | null>(null);
 
-  // TODO: Replace dummy data with real API call
   // Fetch donors from backend
-  const { data: donors = DUMMY_DONORS, isLoading } = useQuery<Donor[]>({
+  const { data: donors = [], isLoading } = useQuery<Donor[]>({
     queryKey: ["donors"],
     queryFn: async () => {
-      // Temporarily return dummy data instead of API call
-      return DUMMY_DONORS;
-      
-      // TODO: Uncomment when database is ready
-      // const response = await fetch("/api/donors");
-      // if (!response.ok) throw new Error("Failed to fetch donors");
-      // return response.json();
+      const response = await fetch("/api/donors");
+      if (!response.ok) throw new Error("Failed to fetch donors");
+      return response.json();
     },
   });
 
