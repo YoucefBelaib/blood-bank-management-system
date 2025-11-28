@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Droplet, Heart, Users, Info } from "lucide-react";
+import { Droplet, Heart, Users, Info, LogIn, User, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
 
 export function AnimatedNav() {
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,6 +91,32 @@ export function AnimatedNav() {
               );
             })}
           </nav>
+
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2 gradient-red-primary text-white rounded-full font-medium shadow-lg"
+                >
+                  {isAdmin ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                  {isAdmin ? "Admin" : "Dashboard"}
+                </motion.div>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2 gradient-red-primary text-white rounded-full font-medium shadow-lg"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Login
+                </motion.div>
+              </Link>
+            )}
+          </div>
 
           <motion.div
             whileHover={{ scale: 1.05 }}
