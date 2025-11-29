@@ -5,7 +5,7 @@ import { BloodDropsAnimation } from "@/components/BloodDrop";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertDonorSchema, type InsertDonor } from "@shared/schema";
@@ -50,6 +50,7 @@ function FormCard({ children, delay = 0 }: { children: React.ReactNode; delay?: 
 
 export default function DonateBlood() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const form = useForm<InsertDonor>({
     resolver: zodResolver(insertDonorSchema),
@@ -78,6 +79,9 @@ export default function DonateBlood() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate dashboard stats and donors list so they refresh with new data
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["donors"] });
       toast({
         title: "Registration Successful!",
         description: "Thank you for becoming a donor. You'll be notified when needed.",

@@ -36,6 +36,9 @@ export const hospitals = pgTable("hospitals", {
   location: text("location").notNull(),
   phone: text("phone").notNull(),
   email: text("email").notNull(),
+  address: text("address"),
+  contactPerson: text("contact_person"),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -77,12 +80,23 @@ export const insertBloodRequestSchema = createInsertSchema(bloodRequests).omit({
   status: true,
 });
 
+export const insertHospitalSchema = createInsertSchema(hospitals).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+});
+
+export const updateStatusSchema = z.object({
+  status: z.enum(["pending", "approved", "rejected"]),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Donor = typeof donors.$inferSelect;
 export type InsertDonor = z.infer<typeof insertDonorSchema>;
 export type BloodInventory = typeof bloodInventory.$inferSelect;
 export type Hospital = typeof hospitals.$inferSelect;
+export type InsertHospital = z.infer<typeof insertHospitalSchema>;
 export type BloodRequest = typeof bloodRequests.$inferSelect;
 export type InsertBloodRequest = z.infer<typeof insertBloodRequestSchema>;
 export type Statistics = typeof statistics.$inferSelect;

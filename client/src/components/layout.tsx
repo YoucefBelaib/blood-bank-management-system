@@ -60,7 +60,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            <Link href="/admin/analysis">
+            {/* <Link href="/admin/analysis">
               <div
                 aria-current={isActive("/admin/analysis") ? "page" : undefined}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/analysis") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
@@ -69,9 +69,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <path d="M6 2h12v4H6z" fill="#A30000" />
                   <path d="M4 8h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" fill="#A30000" />
                 </svg>
-                <span className="text-base tracking-wide">Analysis</span>
+                <span className="text-base tracking-wide"></span>
               </div>
-            </Link>
+            </Link> */}
 
             <Link href="/admin/requests">
               <div

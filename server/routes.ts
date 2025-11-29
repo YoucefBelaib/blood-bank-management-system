@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDonorSchema, insertBloodRequestSchema, insertUserSchema } from "@shared/schema";
+import { insertDonorSchema, insertBloodRequestSchema, insertUserSchema, insertHospitalSchema, updateStatusSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import crypto from "crypto";
 
@@ -10,6 +10,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stats = await storage.getStatistics();
       res.json(stats || { activeDonors: 0, totalBloodUnits: 0, partnerHospitals: 0 });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/dashboard-stats", async (_req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -40,6 +49,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/donors", async (_req, res) => {
+    try {
+      const donors = await storage.getAllDonors();
+      res.json(donors);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/blood-requests", async (req, res) => {
     try {
       const result = insertBloodRequestSchema.safeParse(req.body);
@@ -51,6 +69,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const request = await storage.createBloodRequest(result.data);
       res.status(201).json(request);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/blood-requests", async (_req, res) => {
+    try {
+      const requests = await storage.getBloodRequests();
+      res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/blood-requests/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = updateStatusSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).toString() 
+        });
+      }
+
+      const request = await storage.updateBloodRequestStatus(id, result.data.status);
+      if (!request) {
+        return res.status(404).json({ message: "Blood request not found" });
+      }
+      res.json(request);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Hospital routes
+  app.get("/api/hospitals", async (_req, res) => {
+    try {
+      const hospitals = await storage.getAllHospitals();
+      res.json(hospitals);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/hospitals", async (req, res) => {
+    try {
+      const result = insertHospitalSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).toString() 
+        });
+      }
+
+      const hospital = await storage.createHospital(result.data);
+      res.status(201).json(hospital);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/hospitals/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const hospital = await storage.getHospital(id);
+      if (!hospital) {
+        return res.status(404).json({ message: "Hospital not found" });
+      }
+      res.json(hospital);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/hospitals/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = updateStatusSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).toString() 
+        });
+      }
+
+      const hospital = await storage.updateHospitalStatus(id, result.data.status);
+      if (!hospital) {
+        return res.status(404).json({ message: "Hospital not found" });
+      }
+      res.json(hospital);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

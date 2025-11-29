@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -9,21 +10,47 @@ import {
   LabelList,
 } from "recharts";
 
-// Values in raw numbers (display formatted as K)
-const data = [
-  { name: "O+", value: 17000 },
-  { name: "A+", value: 30000 },
-  { name: "O-", value: 22000 },
-  { name: "AB+", value: 32000 },
-  { name: "A-", value: 13000 },
-  { name: "B+", value: 25000 },
-];
+interface DashboardStats {
+  donorsByBloodType: { name: string; value: number }[];
+  donorsByLocation: { name: string; value: number }[];
+  totalDonors: number;
+  monthlyDonorStats: { month: string; thisYear: number; lastYear: number }[];
+}
 
 export default function BarChartComponent() {
+  const { data: stats, isLoading } = useQuery<DashboardStats>({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const response = await fetch("/api/dashboard-stats");
+      if (!response.ok) throw new Error("Failed to fetch dashboard stats");
+      return response.json();
+    },
+  });
+
+  const chartData = stats?.donorsByBloodType || [];
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
+
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-gray-500">
+        No donor data available
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(...chartData.map(d => d.value), 10);
+
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 6, right: 8, left: 0, bottom: 6 }}>
+        <BarChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 6 }}>
           <XAxis
             dataKey="name"
             axisLine={false}
@@ -36,8 +63,7 @@ export default function BarChartComponent() {
             axisLine={false}
             tickLine={false}
             stroke="#9CA3AF"
-            tickFormatter={(v) => `${v / 1000}K`}
-            domain={[0, 35000]}
+            domain={[0, maxValue + 5]}
             tick={{ fontSize: 12 }}
           />
           <Tooltip
@@ -56,7 +82,6 @@ export default function BarChartComponent() {
             <LabelList
               dataKey="value"
               position="top"
-              formatter={(v: number) => `${v / 1000}K`}
               style={{ fill: "#374151", fontSize: 12, fontWeight: 600 }}
             />
           </Bar>

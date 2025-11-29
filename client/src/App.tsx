@@ -17,6 +17,7 @@ import Layout from "./components/layout";
 import DonorView from "./components/DonorsView";
 import RequestsView from "./components/RequestsView";
 import DonorForm from "./components/DonorForm";
+import HospitalsView from "./components/HospitalsView";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function Router() {
@@ -28,10 +29,11 @@ function Router() {
       <Route path="/request" component={RequestBlood} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignUpPage} />
-      <Route path="/admin"> <Layout> <ProtectedRoute> <Dashboard /> </ProtectedRoute> </Layout> </Route>
-      <Route path="/admin/donors"> <Layout> <ProtectedRoute> <DonorView/> </ProtectedRoute> </Layout> </Route>
-      <Route path="/admin/donors/add"> <Layout> <ProtectedRoute> <DonorForm/> </ProtectedRoute> </Layout> </Route>
-      <Route path="/admin/requests"> <Layout> <ProtectedRoute> <RequestsView/> </ProtectedRoute> </Layout> </Route>
+      <Route path="/admin"> <Layout> <> <Dashboard /> </> </Layout> </Route>
+      <Route path="/admin/donors"> <Layout> <> <DonorView/> </> </Layout> </Route>
+      <Route path="/admin/donors/add"> <Layout> <> <DonorForm/> </> </Layout> </Route>
+      <Route path="/admin/hospitals"> <Layout> <> <HospitalsView/> </> </Layout> </Route>
+      <Route path="/admin/requests"> <Layout> <> <RequestsView/> </> </Layout> </Route>
       <Route component={NotFound} />
     </Switch>
   );
