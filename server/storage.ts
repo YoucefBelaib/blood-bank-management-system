@@ -46,6 +46,8 @@ export interface DashboardStats {
   donorsByLocation: { name: string; value: number }[];
   totalDonors: number;
   monthlyDonorStats: { month: string; thisYear: number; lastYear: number }[];
+  totalHospitals: number;
+  totalPending: number;
 }
 
 export interface IStorage {
@@ -246,11 +248,22 @@ export class DatabaseStorage implements IStorage {
       };
     });
     
+    // Get hospital and pending counts
+    const allHospitals = await database.select().from(hospitals);
+    const allBloodRequests = await database.select().from(bloodRequests);
+    
+    const totalHospitals = allHospitals.filter(h => h.status === "approved").length;
+    const pendingHospitals = allHospitals.filter(h => h.status === "pending").length;
+    const pendingRequests = allBloodRequests.filter(r => r.status === "pending").length;
+    const totalPending = pendingHospitals + pendingRequests;
+    
     return {
       donorsByBloodType,
       donorsByLocation,
       totalDonors: allDonors.length,
       monthlyDonorStats: monthlyStats,
+      totalHospitals,
+      totalPending,
     };
   }
 }
