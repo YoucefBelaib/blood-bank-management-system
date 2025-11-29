@@ -51,7 +51,7 @@ export default function DonorView() {
               </svg>
             </div>
           </div>
-          <Link href="/donors/add" className="px-5 h-10 rounded-full bg-[#F0F0F0] flex items-center justify-center text-gray-700">Add</Link>
+          <Link href="/admin/donors/add" className="px-5 h-10 rounded-full bg-[#F0F0F0] flex items-center justify-center text-gray-700">Add</Link>
           <button className="w-10 h-10 rounded-full bg-[#F0F0F0] flex items-center justify-center text-gray-700">⋯</button>
         </div>
       </div>

@@ -34,9 +34,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Menu items */}
           <div className="flex flex-col gap-4 mt-2">
-            <Link href="/donors">
+            <Link href="/admin/donors">
               <div
-                aria-current={isActive("/donors") ? "page" : undefined}
+                aria-current={isActive("/admin/donors") ? "page" : undefined}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/donors") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -47,9 +47,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            <Link href="/hospitals">
+            <Link href="/admin/hospitals">
               <div
-                aria-current={isActive("/hospitals") ? "page" : undefined}
+                aria-current={isActive("/admin/hospitals") ? "page" : undefined}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/hospitals") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -60,9 +60,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            <Link href="/analysis">
+            <Link href="/admin/analysis">
               <div
-                aria-current={isActive("/analysis") ? "page" : undefined}
+                aria-current={isActive("/admin/analysis") ? "page" : undefined}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/analysis") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,9 +73,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </Link>
 
-            <Link href="/requests">
+            <Link href="/admin/requests">
               <div
-                aria-current={isActive("/requests") ? "page" : undefined}
+                aria-current={isActive("/admin/requests") ? "page" : undefined}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition transform duration-300 ease-out ${isActive("/requests") ? "text-[#A30000] font-semibold" : "text-[#A30000] hover:translate-x-2 hover:shadow-sm hover:bg-[#ffdadc]"}`}
               >
                 <svg className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
