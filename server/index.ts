@@ -1,4 +1,12 @@
+import dotenv from "dotenv";
+import path from "path";
+// Load root .env first, then server/.env to allow server-specific overrides
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+dotenv.config({ path: path.resolve(process.cwd(), "server", ".env") });
+
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed";
@@ -6,6 +14,17 @@ import { seedDatabase } from "./seed";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Session middleware
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, httpOnly: true, maxAge: 1000 * 60 * 60 * 24 },
+  })
+);
 
 app.use((req, res, next) => {
   const start = Date.now();

@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 import { eq } from "drizzle-orm";
 import {
@@ -20,11 +20,23 @@ import {
 
 neonConfig.webSocketConstructor = ws;
 
-const pool = process.env.DATABASE_URL 
-  ? new Pool({ connectionString: process.env.DATABASE_URL })
-  : null;
+// Lazily initialize the Neon pool and Drizzle instance at runtime.
+// This avoids trying to read `process.env.DATABASE_URL` at import time
+// (which can happen before dotenv has been loaded in some startup flows).
+let _pool: ReturnType<typeof neon> | null = null;
+let _db: ReturnType<typeof drizzle> | null = null;
 
-export const db = pool ? drizzle({ client: pool }) : null as any;
+function initDbIfNeeded() {
+  if (_db) return _db;
+  if (!process.env.DATABASE_URL) return null;
+  _pool = neon(process.env.DATABASE_URL);
+  _db = drizzle(_pool as any);
+  return _db;
+}
+
+export function getDb() {
+  return initDbIfNeeded();
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -39,10 +51,11 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   private ensureDb() {
-    if (!db) {
+    const runtimeDb = initDbIfNeeded();
+    if (!runtimeDb) {
       throw new Error("Database not configured. Please set DATABASE_URL environment variable.");
     }
-    return db;
+    return runtimeDb;
   }
 
   async getUser(id: string): Promise<User | undefined> {

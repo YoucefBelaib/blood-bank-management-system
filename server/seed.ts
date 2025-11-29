@@ -1,10 +1,16 @@
-import { db } from "./storage";
+import { getDb } from "./storage";
 import { bloodInventory, hospitals, statistics } from "@shared/schema";
 import { sql } from "drizzle-orm";
 
 export async function seedDatabase() {
   try {
     console.log("Starting database seeding...");
+
+    const db = getDb();
+    if (!db) {
+      console.log("Skipping seed: DATABASE_URL not configured");
+      return;
+    }
 
     await db.insert(bloodInventory)
       .values([

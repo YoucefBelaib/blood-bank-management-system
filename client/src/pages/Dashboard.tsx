@@ -2,9 +2,13 @@ import React from "react";
 import BarChartComponent from "@/components/stats/Barchart";
 import PieChartComponent from "@/components/stats/piechart";
 import LineChartComponent from "@/components/stats/linechart";
+import { useAuth } from "@/lib/auth";
+import { useLocation, Route, Switch } from "wouter";
 
 const Dashboard: React.FC = () => {
+
   return (
+    <>
     <div className="w-full flex flex-col gap-10">
       
       {/* Top Section */}
@@ -54,6 +58,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
