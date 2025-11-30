@@ -45,10 +45,6 @@ A modern, full-stack web application for managing blood bank operations, donor r
 - **bcrypt** - Password hashing
 - **Cookie Parser** - Session management
 
-### Database
-- **PostgreSQL** with Neon serverless
-- **Drizzle Kit** - Database migrations and management
-
 ## 🚀 Getting Started
 
 ### Prerequisites
