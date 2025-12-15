@@ -16,9 +16,6 @@ export function AnimatedNav() {
   }, []);
 
   const navItems = [
-    { href: "/", label: "Home", icon: Heart, testId: "nav-home" },
-    { href: "/donate", label: "Donate Blood", icon: Droplet, testId: "nav-donate" },
-    { href: "/request", label: "Request Blood", icon: Users, testId: "nav-request" },
     { href: "/about", label: "About Us", icon: Info, testId: "nav-about" },
   ];
 

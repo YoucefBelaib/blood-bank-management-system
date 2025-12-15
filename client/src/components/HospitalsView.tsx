@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, MoreVertical, Building2, Droplet, AlertTriangle } from "lucide-react";
+import { Search, MoreVertical, Building2, Droplet, AlertTriangle, Plus, X, Eye, EyeOff } from "lucide-react";
 import StatusDropdown, { type StatusType } from "./StatusDropdown";
 import BloodRequestModal from "./BloodRequestModal";
 import HospitalDetailsModal from "./HospitalDetailsModal";
@@ -58,6 +58,17 @@ const HospitalsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null);
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
+  const [showAddHospitalModal, setShowAddHospitalModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [hospitalForm, setHospitalForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    location: "",
+    address: "",
+    contactPerson: "",
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -148,6 +159,47 @@ const HospitalsView: React.FC = () => {
     },
   });
 
+  // Create hospital mutation
+  const createHospital = useMutation({
+    mutationFn: async (data: typeof hospitalForm) => {
+      const response = await fetch("/api/hospitals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create hospital");
+      }
+      return response.json();
+    },
+    onSuccess: (newHospital) => {
+      queryClient.invalidateQueries({ queryKey: ["hospitals"] });
+      queryClient.invalidateQueries({ queryKey: ["statistics"] });
+      toast({
+        title: "Hospital Created",
+        description: `${newHospital.name} has been added successfully. They can now log in at /hospital`,
+      });
+      setShowAddHospitalModal(false);
+      setHospitalForm({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        location: "",
+        address: "",
+        contactPerson: "",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create hospital",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter blood requests based on search
   const filteredRequests = useMemo(() => {
     if (!searchQuery.trim()) return bloodRequests;
@@ -180,6 +232,19 @@ const HospitalsView: React.FC = () => {
 
   const handleHospitalStatusChange = (id: string, status: StatusType) => {
     updateHospitalStatus.mutate({ id, status });
+  };
+
+  const handleAddHospital = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hospitalForm.name || !hospitalForm.email || !hospitalForm.password || !hospitalForm.phone || !hospitalForm.location) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    createHospital.mutate(hospitalForm);
   };
 
   return (
@@ -231,9 +296,9 @@ const HospitalsView: React.FC = () => {
               {/* Table */}
               <div className="bg-white rounded-xl border border-gray-100 flex-1">
                 {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-5 py-4 border-b border-gray-100">
-                  <div className="col-span-4 text-sm font-medium text-gray-500">Hospital</div>
-                  <div className="col-span-2 text-sm font-medium text-gray-500">Date</div>
+                <div className="grid grid-cols-12 gap-2 px-5 py-4 border-b border-gray-100">
+                  <div className="col-span-3 text-sm font-medium text-gray-500">Hospital</div>
+                  <div className="col-span-3 text-sm font-medium text-gray-500">Date</div>
                   <div className="col-span-2 text-sm font-medium text-gray-500">Blood Type</div>
                   <div className="col-span-1 text-sm font-medium text-gray-500">Units</div>
                   <div className="col-span-3 text-sm font-medium text-gray-500">Status</div>
@@ -254,7 +319,7 @@ const HospitalsView: React.FC = () => {
                       <div
                         key={request.id}
                         onClick={() => setSelectedRequest(request)}
-                        className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
+                        className="grid grid-cols-12 gap-2 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
@@ -266,24 +331,24 @@ const HospitalsView: React.FC = () => {
                         aria-label={`View details for ${request.hospitalName}'s blood request`}
                       >
                         {/* Hospital Name with Avatar */}
-                        <div className="col-span-4 flex items-center gap-3">
+                        <div className="col-span-3 flex items-center gap-2 min-w-0">
                           <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(
+                            className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(
                               request.hospitalName
                             )}`}
                           >
                             {getInitials(request.hospitalName)}
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <AlertTriangle className={`w-3.5 h-3.5 ${getUrgencyColor(request.urgencyLevel)}`} />
-                            <span className="text-[14px] font-normal text-gray-900 truncate max-w-[120px]">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <AlertTriangle className={`w-3 h-3 flex-shrink-0 ${getUrgencyColor(request.urgencyLevel)}`} />
+                            <span className="text-[13px] font-normal text-gray-900 truncate">
                               {request.hospitalName}
                             </span>
                           </div>
                         </div>
 
                         {/* Date */}
-                        <div className="col-span-2 flex items-center text-[14px] text-gray-600">
+                        <div className="col-span-3 flex items-center text-[13px] text-gray-600 whitespace-nowrap">
                           {formatDate(request.createdAt)}
                         </div>
 
@@ -326,20 +391,22 @@ const HospitalsView: React.FC = () => {
                   </span>
                 </div>
                 <button
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="More options"
+                  onClick={() => setShowAddHospitalModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#A30000] hover:bg-[#8B0000] text-white rounded-lg transition-colors text-sm font-medium"
+                  aria-label="Add hospital"
                 >
-                  <MoreVertical className="w-5 h-5 text-gray-600" />
+                  <Plus className="w-4 h-4" />
+                  Add Hospital
                 </button>
               </div>
 
               {/* Table */}
               <div className="bg-white rounded-xl border border-gray-100 flex-1">
                 {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-5 py-4 border-b border-gray-100">
-                  <div className="col-span-4 text-sm font-medium text-gray-500">Hospital Name</div>
+                <div className="grid grid-cols-12 gap-2 px-5 py-4 border-b border-gray-100">
+                  <div className="col-span-3 text-sm font-medium text-gray-500">Hospital Name</div>
                   <div className="col-span-3 text-sm font-medium text-gray-500">Date</div>
-                  <div className="col-span-2 text-sm font-medium text-gray-500">Email</div>
+                  <div className="col-span-3 text-sm font-medium text-gray-500">Email</div>
                   <div className="col-span-3 text-sm font-medium text-gray-500">Status</div>
                 </div>
 
@@ -358,7 +425,7 @@ const HospitalsView: React.FC = () => {
                       <div
                         key={hospital.id}
                         onClick={() => setSelectedHospital(hospital)}
-                        className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
+                        className="grid grid-cols-12 gap-2 px-5 py-4 hover:bg-gray-50 cursor-pointer transition-colors group"
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
@@ -370,27 +437,27 @@ const HospitalsView: React.FC = () => {
                         aria-label={`View details for ${hospital.name}`}
                       >
                         {/* Hospital Name with Avatar */}
-                        <div className="col-span-4 flex items-center gap-3">
+                        <div className="col-span-3 flex items-center gap-2 min-w-0">
                           <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-medium ${getAvatarColor(
+                            className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(
                               hospital.name
                             )}`}
                           >
                             {getInitials(hospital.name)}
                           </div>
-                          <span className="text-[14px] font-normal text-gray-900 truncate max-w-[140px]">
+                          <span className="text-[13px] font-normal text-gray-900 truncate">
                             {hospital.name}
                           </span>
                         </div>
 
                         {/* Date */}
-                        <div className="col-span-3 flex items-center text-[14px] text-gray-600">
+                        <div className="col-span-3 flex items-center text-[13px] text-gray-600 whitespace-nowrap">
                           {formatDate(hospital.createdAt)}
                         </div>
 
                         {/* Email */}
-                        <div className="col-span-2 flex items-center text-[14px] text-gray-600 truncate">
-                          <span className="truncate max-w-full" title={hospital.email}>
+                        <div className="col-span-3 flex items-center text-[13px] text-gray-600 min-w-0">
+                          <span className="truncate" title={hospital.email}>
                             {hospital.email.split("@")[0]}
                           </span>
                         </div>
@@ -431,6 +498,164 @@ const HospitalsView: React.FC = () => {
           onStatusChange={handleHospitalStatusChange}
           isUpdating={updateHospitalStatus.isPending}
         />
+      )}
+
+      {/* Add Hospital Modal */}
+      {showAddHospitalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowAddHospitalModal(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#A30000] to-[#8B0000] p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Add New Hospital</h2>
+                    <p className="text-red-100 text-sm">Create a hospital account</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddHospitalModal(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleAddHospital} className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Hospital Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={hospitalForm.name}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, name: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="City General Hospital"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={hospitalForm.email}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, email: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="contact@hospital.dz"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={hospitalForm.password}
+                      onChange={(e) => setHospitalForm({ ...hospitalForm, password: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 pr-10"
+                      placeholder="Enter password for hospital login"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This password will be used by the hospital to access their dashboard at /hospital
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone *
+                  </label>
+                  <input
+                    type="tel"
+                    value={hospitalForm.phone}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, phone: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="+213555123456"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location *
+                  </label>
+                  <input
+                    type="text"
+                    value={hospitalForm.location}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, location: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="Downtown Algiers"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Address
+                  </label>
+                  <input
+                    type="text"
+                    value={hospitalForm.address}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, address: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="123 Main Street, Downtown, Algiers"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Contact Person
+                  </label>
+                  <input
+                    type="text"
+                    value={hospitalForm.contactPerson}
+                    onChange={(e) => setHospitalForm({ ...hospitalForm, contactPerson: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    placeholder="Dr. Ahmed Benali"
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowAddHospitalModal(false)}
+                  className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createHospital.isPending}
+                  className="flex-1 py-2.5 bg-[#A30000] hover:bg-[#8B0000] text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {createHospital.isPending ? "Creating..." : "Create Hospital"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

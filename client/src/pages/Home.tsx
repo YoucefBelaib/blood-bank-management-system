@@ -106,7 +106,7 @@ export default function Home() {
 
             <motion.div
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
+              className="flex justify-center items-center pt-8"
             >
               <motion.a
                 href="/donate"
@@ -117,16 +117,6 @@ export default function Home() {
               >
                 Become a Donor
                 <ArrowRight className="w-5 h-5" />
-              </motion.a>
-
-              <motion.a
-                href="/request"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-white border-2 border-red-600 text-red-600 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-shadow"
-                data-testid="hero-request-button"
-              >
-                Request Blood
               </motion.a>
             </motion.div>
           </div>

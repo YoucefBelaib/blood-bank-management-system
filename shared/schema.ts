@@ -35,7 +35,8 @@ export const hospitals = pgTable("hospitals", {
   name: text("name").notNull(),
   location: text("location").notNull(),
   phone: text("phone").notNull(),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
+  password: text("password"),
   address: text("address"),
   contactPerson: text("contact_person"),
   status: text("status").notNull().default("pending"), // pending, approved, rejected
@@ -44,6 +45,7 @@ export const hospitals = pgTable("hospitals", {
 
 export const bloodRequests = pgTable("blood_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hospitalId: varchar("hospital_id"),
   hospitalName: text("hospital_name").notNull(),
   bloodType: text("blood_type").notNull(),
   unitsNeeded: integer("units_needed").notNull(),
@@ -88,6 +90,11 @@ export const insertHospitalSchema = createInsertSchema(hospitals).omit({
 
 export const updateStatusSchema = z.object({
   status: z.enum(["pending", "approved", "rejected"]),
+});
+
+export const hospitalLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

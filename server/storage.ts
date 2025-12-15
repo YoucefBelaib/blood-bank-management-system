@@ -60,11 +60,13 @@ export interface IStorage {
   getStatistics(): Promise<Statistics | undefined>;
   createBloodRequest(request: InsertBloodRequest): Promise<BloodRequest>;
   getBloodRequests(): Promise<BloodRequest[]>;
+  getBloodRequestsByHospitalId(hospitalId: string): Promise<BloodRequest[]>;
   updateBloodRequestStatus(id: string, status: string): Promise<BloodRequest | undefined>;
   getAllHospitals(): Promise<Hospital[]>;
   createHospital(hospital: InsertHospital): Promise<Hospital>;
   updateHospitalStatus(id: string, status: string): Promise<Hospital | undefined>;
   getHospital(id: string): Promise<Hospital | undefined>;
+  getHospitalByEmail(email: string): Promise<Hospital | undefined>;
   getDashboardStats(): Promise<DashboardStats>;
 }
 
@@ -148,6 +150,11 @@ export class DatabaseStorage implements IStorage {
     return await database.select().from(bloodRequests);
   }
 
+  async getBloodRequestsByHospitalId(hospitalId: string): Promise<BloodRequest[]> {
+    const database = this.ensureDb();
+    return await database.select().from(bloodRequests).where(eq(bloodRequests.hospitalId, hospitalId));
+  }
+
   async updateBloodRequestStatus(id: string, status: string): Promise<BloodRequest | undefined> {
     const database = this.ensureDb();
     const result = await database
@@ -197,6 +204,12 @@ export class DatabaseStorage implements IStorage {
   async getHospital(id: string): Promise<Hospital | undefined> {
     const database = this.ensureDb();
     const result = await database.select().from(hospitals).where(eq(hospitals.id, id));
+    return result[0];
+  }
+
+  async getHospitalByEmail(email: string): Promise<Hospital | undefined> {
+    const database = this.ensureDb();
+    const result = await database.select().from(hospitals).where(eq(hospitals.email, email));
     return result[0];
   }
 

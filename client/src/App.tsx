@@ -19,6 +19,9 @@ import RequestsView from "./components/RequestsView";
 import DonorForm from "./components/DonorForm";
 import HospitalsView from "./components/HospitalsView";
 import ProtectedRoute from "./components/ProtectedRoute";
+import HospitalLogin from "./pages/HospitalLogin";
+import HospitalDashboard from "./pages/HospitalDashboard";
+import HospitalRequestForm from "./pages/HospitalRequestForm";
 
 function Router() {
   return (
@@ -34,6 +37,9 @@ function Router() {
       <Route path="/admin/donors/add"> <Layout> <> <DonorForm/> </> </Layout> </Route>
       <Route path="/admin/hospitals"> <Layout> <> <HospitalsView/> </> </Layout> </Route>
       <Route path="/admin/requests"> <Layout> <> <RequestsView/> </> </Layout> </Route>
+      <Route path="/hospital" component={HospitalLogin} />
+      <Route path="/hospital/dashboard" component={HospitalDashboard} />
+      <Route path="/hospital/request" component={HospitalRequestForm} />
       <Route component={NotFound} />
     </Switch>
   );

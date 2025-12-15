@@ -1,6 +1,14 @@
 import { getDb } from "./storage";
 import { bloodInventory, hospitals, statistics, bloodRequests, donors } from "@shared/schema";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import crypto from "crypto";
+
+// Helper function to hash passwords
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${derived}`;
+}
 
 export async function seedDatabase() {
   try {
@@ -146,12 +154,16 @@ export async function seedDatabase() {
     const existingHospitals = await db.select().from(hospitals).limit(1);
     
     if (existingHospitals.length === 0) {
+      // All hospital passwords are "hospital123" for demo purposes
+      const demoPassword = hashPassword("hospital123");
+      
       await db.insert(hospitals).values([
         {
           name: "City General Hospital",
           location: "Downtown Algiers",
           phone: "+213555123456",
           email: "contact@cityhospital.dz",
+          password: demoPassword,
           address: "123 Main Street, Downtown, Algiers",
           contactPerson: "Dr. Ahmed Benali",
           status: "approved",
@@ -161,6 +173,7 @@ export async function seedDatabase() {
           location: "North District",
           phone: "+213555234567",
           email: "info@regionalmed.dz",
+          password: demoPassword,
           address: "456 Healthcare Ave, North District",
           contactPerson: "Dr. Fatima Hadj",
           status: "approved",
@@ -170,6 +183,7 @@ export async function seedDatabase() {
           location: "University Campus",
           phone: "+213555345678",
           email: "contact@unihospital.dz",
+          password: demoPassword,
           address: "University of Algiers, Campus Medical Center",
           contactPerson: "Prof. Karim Meziane",
           status: "pending",
@@ -179,6 +193,7 @@ export async function seedDatabase() {
           location: "Central Avenue",
           phone: "+213555456789",
           email: "emergency@carecentr.dz",
+          password: demoPassword,
           address: "789 Central Avenue, Algiers",
           contactPerson: "Dr. Leila Boumediene",
           status: "pending",
@@ -188,6 +203,7 @@ export async function seedDatabase() {
           location: "West Side",
           phone: "+213555567890",
           email: "info@communityclinic.dz",
+          password: demoPassword,
           address: "321 West Side Blvd",
           contactPerson: "Dr. Youssef Ammari",
           status: "pending",
@@ -197,20 +213,29 @@ export async function seedDatabase() {
           location: "Central Algiers",
           phone: "+213555678901",
           email: "contact@mustapha.dz",
+          password: demoPassword,
           address: "Place du 1er Mai, Central Algiers",
           contactPerson: "Dr. Nadia Khelif",
           status: "rejected",
         },
       ]);
-      console.log("Seeded 6 hospitals");
+      console.log("Seeded 6 hospitals (password: hospital123)");
     }
 
-    // Seed blood requests if none exist
+    // Seed blood requests linked to hospitals
     const existingRequests = await db.select().from(bloodRequests).limit(1);
     
     if (existingRequests.length === 0) {
+      // Get hospital IDs for linking
+      const cityHospital = await db.select().from(hospitals).where(eq(hospitals.email, "contact@cityhospital.dz")).limit(1);
+      const regionalMed = await db.select().from(hospitals).where(eq(hospitals.email, "info@regionalmed.dz")).limit(1);
+      
+      const cityHospitalId = cityHospital[0]?.id;
+      const regionalMedId = regionalMed[0]?.id;
+
       await db.insert(bloodRequests).values([
         {
+          hospitalId: cityHospitalId,
           hospitalName: "City General Hospital",
           bloodType: "O-",
           unitsNeeded: 5,
@@ -221,6 +246,29 @@ export async function seedDatabase() {
           status: "pending",
         },
         {
+          hospitalId: cityHospitalId,
+          hospitalName: "City General Hospital",
+          bloodType: "A+",
+          unitsNeeded: 2,
+          urgencyLevel: "normal",
+          location: "Downtown Algiers",
+          phone: "+213555123456",
+          email: "blood@cityhospital.dz",
+          status: "approved",
+        },
+        {
+          hospitalId: cityHospitalId,
+          hospitalName: "City General Hospital",
+          bloodType: "B-",
+          unitsNeeded: 3,
+          urgencyLevel: "urgent",
+          location: "Downtown Algiers",
+          phone: "+213555123456",
+          email: "blood@cityhospital.dz",
+          status: "rejected",
+        },
+        {
+          hospitalId: regionalMedId,
           hospitalName: "Regional Medical Center",
           bloodType: "A+",
           unitsNeeded: 3,
@@ -229,6 +277,17 @@ export async function seedDatabase() {
           phone: "+213555234567",
           email: "blood@regionalmed.dz",
           status: "approved",
+        },
+        {
+          hospitalId: regionalMedId,
+          hospitalName: "Regional Medical Center",
+          bloodType: "AB+",
+          unitsNeeded: 1,
+          urgencyLevel: "normal",
+          location: "North District",
+          phone: "+213555234567",
+          email: "blood@regionalmed.dz",
+          status: "pending",
         },
         {
           hospitalName: "University Hospital",
@@ -261,7 +320,7 @@ export async function seedDatabase() {
           status: "rejected",
         },
       ]);
-      console.log("Seeded 5 blood requests");
+      console.log("Seeded 8 blood requests (linked to hospitals)");
     }
 
     // Seed or update statistics

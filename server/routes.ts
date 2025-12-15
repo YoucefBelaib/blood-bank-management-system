@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDonorSchema, insertBloodRequestSchema, insertUserSchema, insertHospitalSchema, updateStatusSchema } from "@shared/schema";
+import { insertDonorSchema, insertBloodRequestSchema, insertUserSchema, insertHospitalSchema, updateStatusSchema, hospitalLoginSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import crypto from "crypto";
 
@@ -122,9 +122,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const hospital = await storage.createHospital(result.data);
+      // Hash password if provided
+      let hospitalData = { ...result.data };
+      if (hospitalData.password) {
+        const salt = crypto.randomBytes(16).toString("hex");
+        const derived = crypto.scryptSync(hospitalData.password, salt, 64).toString("hex");
+        hospitalData.password = `${salt}:${derived}`;
+      }
+
+      const hospital = await storage.createHospital(hospitalData);
       res.status(201).json(hospital);
     } catch (error: any) {
+      if (error.message?.includes("duplicate key") || error.message?.includes("unique constraint")) {
+        return res.status(400).json({ message: "A hospital with this email already exists" });
+      }
       res.status(500).json({ message: error.message });
     }
   });
@@ -241,6 +252,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) return res.status(401).json({ message: "Not authenticated" });
 
       return res.json({ user: { id: user.id, username: user.username } });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Hospital Authentication Routes
+  app.post("/api/hospital/auth/login", async (req, res) => {
+    try {
+      const result = hospitalLoginSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ message: "Invalid credentials format" });
+      }
+
+      const { email, password } = result.data;
+      const hospital = await storage.getHospitalByEmail(email);
+      
+      if (!hospital) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      if (hospital.status !== "approved") {
+        return res.status(403).json({ message: "Hospital account is not approved yet" });
+      }
+
+      if (!hospital.password) {
+        return res.status(401).json({ message: "Password not set for this hospital" });
+      }
+
+      const [salt, hash] = hospital.password.split(":");
+      if (!salt || !hash) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const derived = crypto.scryptSync(password, salt, 64).toString("hex");
+      if (!crypto.timingSafeEqual(Buffer.from(derived, "hex"), Buffer.from(hash, "hex"))) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      (req as any).session.hospitalId = hospital.id;
+
+      return res.json({ 
+        hospital: { 
+          id: hospital.id, 
+          name: hospital.name, 
+          email: hospital.email,
+          location: hospital.location 
+        } 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/hospital/auth/logout", async (req, res) => {
+    try {
+      (req as any).session.hospitalId = null;
+      res.json({ ok: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/hospital/auth/me", async (req, res) => {
+    try {
+      const hospitalId = (req as any).session?.hospitalId;
+      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+
+      const hospital = await storage.getHospital(hospitalId);
+      if (!hospital) return res.status(401).json({ message: "Not authenticated" });
+
+      return res.json({ 
+        hospital: { 
+          id: hospital.id, 
+          name: hospital.name, 
+          email: hospital.email,
+          location: hospital.location 
+        } 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/hospital/requests", async (req, res) => {
+    try {
+      const hospitalId = (req as any).session?.hospitalId;
+      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+
+      const requests = await storage.getBloodRequestsByHospitalId(hospitalId);
+      return res.json(requests);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/hospital/requests", async (req, res) => {
+    try {
+      const hospitalId = (req as any).session?.hospitalId;
+      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+
+      const { bloodType, unitsNeeded, urgencyLevel, location, phone, email, hospitalName } = req.body;
+
+      if (!bloodType || !unitsNeeded || !urgencyLevel || !location || !phone || !email || !hospitalName) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const request = await storage.createBloodRequest({
+        hospitalId,
+        hospitalName,
+        bloodType,
+        unitsNeeded: parseInt(unitsNeeded, 10),
+        urgencyLevel,
+        location,
+        phone,
+        email,
+      });
+
+      res.status(201).json(request);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
