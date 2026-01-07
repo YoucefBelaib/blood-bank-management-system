@@ -1,7 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDonorSchema, insertBloodRequestSchema, insertUserSchema, insertHospitalSchema, updateStatusSchema, hospitalLoginSchema } from "@shared/schema";
+import {
+  insertDonorSchema,
+  insertBloodRequestSchema,
+  insertUserSchema,
+  insertHospitalSchema,
+  updateStatusSchema,
+  hospitalLoginSchema,
+} from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import crypto from "crypto";
 
@@ -9,7 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/statistics", async (_req, res) => {
     try {
       const stats = await storage.getStatistics();
-      res.json(stats || { activeDonors: 0, totalBloodUnits: 0, partnerHospitals: 0 });
+      res.json(
+        stats || { activeDonors: 0, totalBloodUnits: 0, partnerHospitals: 0 }
+      );
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -37,8 +46,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const result = insertDonorSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).toString() 
+        return res.status(400).json({
+          message: fromZodError(result.error).toString(),
         });
       }
 
@@ -58,12 +67,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/donors/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!id || typeof id !== "string") {
+        return res.status(400).json({ message: "Invalid donor id" });
+      }
+
+      const deleted = await storage.deleteDonor(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Donor not found" });
+      }
+
+      return res.json({ ok: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/blood-requests", async (req, res) => {
     try {
       const result = insertBloodRequestSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).toString() 
+        return res.status(400).json({
+          message: fromZodError(result.error).toString(),
         });
       }
 
@@ -88,12 +115,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const result = updateStatusSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).toString() 
+        return res.status(400).json({
+          message: fromZodError(result.error).toString(),
         });
       }
 
-      const request = await storage.updateBloodRequestStatus(id, result.data.status);
+      const request = await storage.updateBloodRequestStatus(
+        id,
+        result.data.status
+      );
       if (!request) {
         return res.status(404).json({ message: "Blood request not found" });
       }
@@ -117,8 +147,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const result = insertHospitalSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).toString() 
+        return res.status(400).json({
+          message: fromZodError(result.error).toString(),
         });
       }
 
@@ -126,15 +156,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let hospitalData = { ...result.data };
       if (hospitalData.password) {
         const salt = crypto.randomBytes(16).toString("hex");
-        const derived = crypto.scryptSync(hospitalData.password, salt, 64).toString("hex");
+        const derived = crypto
+          .scryptSync(hospitalData.password, salt, 64)
+          .toString("hex");
         hospitalData.password = `${salt}:${derived}`;
       }
 
       const hospital = await storage.createHospital(hospitalData);
       res.status(201).json(hospital);
     } catch (error: any) {
-      if (error.message?.includes("duplicate key") || error.message?.includes("unique constraint")) {
-        return res.status(400).json({ message: "A hospital with this email already exists" });
+      if (
+        error.message?.includes("duplicate key") ||
+        error.message?.includes("unique constraint")
+      ) {
+        return res
+          .status(400)
+          .json({ message: "A hospital with this email already exists" });
       }
       res.status(500).json({ message: error.message });
     }
@@ -158,12 +195,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const result = updateStatusSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).toString() 
+        return res.status(400).json({
+          message: fromZodError(result.error).toString(),
         });
       }
 
-      const hospital = await storage.updateHospitalStatus(id, result.data.status);
+      const hospital = await storage.updateHospitalStatus(
+        id,
+        result.data.status
+      );
       if (!hospital) {
         return res.status(404).json({ message: "Hospital not found" });
       }
@@ -178,7 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: fromZodError(result.error).toString() });
+        return res
+          .status(400)
+          .json({ message: fromZodError(result.error).toString() });
       }
 
       const { username, password } = result.data;
@@ -202,7 +244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // ignore if session not configured
       }
 
-      return res.status(201).json({ user: { id: user.id, username: user.username } });
+      return res
+        .status(201)
+        .json({ user: { id: user.id, username: user.username } });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -211,16 +255,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      if (!username || !password) return res.status(400).json({ message: "Missing credentials" });
+      if (!username || !password)
+        return res.status(400).json({ message: "Missing credentials" });
 
       const user = await storage.getUserByUsername(username);
-      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      if (!user)
+        return res.status(401).json({ message: "Invalid credentials" });
 
       const [salt, hash] = (user.password || "").split(":");
-      if (!salt || !hash) return res.status(401).json({ message: "Invalid credentials" });
+      if (!salt || !hash)
+        return res.status(401).json({ message: "Invalid credentials" });
 
       const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-      if (!crypto.timingSafeEqual(Buffer.from(derived, "hex"), Buffer.from(hash, "hex"))) {
+      if (
+        !crypto.timingSafeEqual(
+          Buffer.from(derived, "hex"),
+          Buffer.from(hash, "hex")
+        )
+      ) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -246,7 +298,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/me", async (req, res) => {
     try {
       const userId = (req as any).session?.userId;
-      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      if (!userId)
+        return res.status(401).json({ message: "Not authenticated" });
 
       const user = await storage.getUser(userId);
       if (!user) return res.status(401).json({ message: "Not authenticated" });
@@ -267,17 +320,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { email, password } = result.data;
       const hospital = await storage.getHospitalByEmail(email);
-      
+
       if (!hospital) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       if (hospital.status !== "approved") {
-        return res.status(403).json({ message: "Hospital account is not approved yet" });
+        return res
+          .status(403)
+          .json({ message: "Hospital account is not approved yet" });
       }
 
       if (!hospital.password) {
-        return res.status(401).json({ message: "Password not set for this hospital" });
+        return res
+          .status(401)
+          .json({ message: "Password not set for this hospital" });
       }
 
       const [salt, hash] = hospital.password.split(":");
@@ -286,19 +343,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-      if (!crypto.timingSafeEqual(Buffer.from(derived, "hex"), Buffer.from(hash, "hex"))) {
+      if (
+        !crypto.timingSafeEqual(
+          Buffer.from(derived, "hex"),
+          Buffer.from(hash, "hex")
+        )
+      ) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       (req as any).session.hospitalId = hospital.id;
 
-      return res.json({ 
-        hospital: { 
-          id: hospital.id, 
-          name: hospital.name, 
+      return res.json({
+        hospital: {
+          id: hospital.id,
+          name: hospital.name,
           email: hospital.email,
-          location: hospital.location 
-        } 
+          location: hospital.location,
+        },
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -317,18 +379,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/hospital/auth/me", async (req, res) => {
     try {
       const hospitalId = (req as any).session?.hospitalId;
-      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+      if (!hospitalId)
+        return res.status(401).json({ message: "Not authenticated" });
 
       const hospital = await storage.getHospital(hospitalId);
-      if (!hospital) return res.status(401).json({ message: "Not authenticated" });
+      if (!hospital)
+        return res.status(401).json({ message: "Not authenticated" });
 
-      return res.json({ 
-        hospital: { 
-          id: hospital.id, 
-          name: hospital.name, 
+      return res.json({
+        hospital: {
+          id: hospital.id,
+          name: hospital.name,
           email: hospital.email,
-          location: hospital.location 
-        } 
+          location: hospital.location,
+        },
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -338,7 +402,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/hospital/requests", async (req, res) => {
     try {
       const hospitalId = (req as any).session?.hospitalId;
-      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+      if (!hospitalId)
+        return res.status(401).json({ message: "Not authenticated" });
 
       const requests = await storage.getBloodRequestsByHospitalId(hospitalId);
       return res.json(requests);
@@ -350,11 +415,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/hospital/requests", async (req, res) => {
     try {
       const hospitalId = (req as any).session?.hospitalId;
-      if (!hospitalId) return res.status(401).json({ message: "Not authenticated" });
+      if (!hospitalId)
+        return res.status(401).json({ message: "Not authenticated" });
 
-      const { bloodType, unitsNeeded, urgencyLevel, location, phone, email, hospitalName } = req.body;
+      const {
+        bloodType,
+        unitsNeeded,
+        urgencyLevel,
+        location,
+        phone,
+        email,
+        hospitalName,
+      } = req.body;
 
-      if (!bloodType || !unitsNeeded || !urgencyLevel || !location || !phone || !email || !hospitalName) {
+      if (
+        !bloodType ||
+        !unitsNeeded ||
+        !urgencyLevel ||
+        !location ||
+        !phone ||
+        !email ||
+        !hospitalName
+      ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 

@@ -1,18 +1,18 @@
 import React, { useEffect } from "react";
-import { X, User, Droplet, Calendar, MapPin, Phone, Mail, Hash } from "lucide-react";
+import {
+  X,
+  User,
+  Droplet,
+  Calendar,
+  MapPin,
+  Phone,
+  Mail,
+  Hash,
+  Trash2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Donor } from "../../../shared/schema";
-
-// Status configuration (matching DonorsList)
-const statusConfig = {
-  "In Progress": { bg: "bg-gray-200", text: "text-gray-700" },
-  "Complete": { bg: "bg-blue-100", text: "text-blue-600" },
-  "Pending": { bg: "bg-blue-100", text: "text-blue-500" },
-  "Approved": { bg: "bg-gray-200", text: "text-gray-700" },
-  "Rejected": { bg: "bg-red-100", text: "text-red-600" },
-} as const;
-
-type DonorStatus = keyof typeof statusConfig;
 
 interface DonorDetailsModalProps {
   donor: Donor;
@@ -30,7 +30,9 @@ const getAvatarColor = (name: string): string => {
     "bg-pink-500",
     "bg-indigo-500",
   ];
-  const hash = name.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  const hash = name
+    .split("")
+    .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   return colors[hash % colors.length];
 };
 
@@ -51,7 +53,43 @@ const formatDate = (date: Date | string): string => {
   });
 };
 
-const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose }) => {
+const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({
+  donor,
+  onClose,
+}) => {
+  const queryClient = useQueryClient();
+
+  const deleteDonor = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/donors/${donor.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.status === 404) {
+        throw new Error("Donor not found");
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to delete donor");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["donors"] });
+      onClose();
+    },
+  });
+
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this donor?"
+    );
+    if (!confirmed || deleteDonor.isPending) return;
+    deleteDonor.mutate();
+  };
+
   // Close on ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -97,7 +135,9 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
             <div className="flex items-start gap-4 flex-1">
               {/* Avatar */}
               <div
-                className={`w-16 h-16 ${getAvatarColor(donor.fullName)} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md flex-shrink-0`}
+                className={`w-16 h-16 ${getAvatarColor(
+                  donor.fullName
+                )} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md flex-shrink-0`}
               >
                 {getInitials(donor.fullName)}
               </div>
@@ -131,10 +171,26 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
                 Personal Information
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <InfoField icon={<Hash className="w-4 h-4" />} label="Donor ID" value={donor.id.slice(0, 8)} />
-                <InfoField icon={<User className="w-4 h-4" />} label="Age" value={`${donor.age} years`} />
-                <InfoField icon={<User className="w-4 h-4" />} label="Gender" value={donor.gender} />
-                <InfoField icon={<Droplet className="w-4 h-4" />} label="Blood Type" value={donor.bloodType} />
+                <InfoField
+                  icon={<Hash className="w-4 h-4" />}
+                  label="Donor ID"
+                  value={donor.id.slice(0, 8)}
+                />
+                <InfoField
+                  icon={<User className="w-4 h-4" />}
+                  label="Age"
+                  value={`${donor.age} years`}
+                />
+                <InfoField
+                  icon={<User className="w-4 h-4" />}
+                  label="Gender"
+                  value={donor.gender}
+                />
+                <InfoField
+                  icon={<Droplet className="w-4 h-4" />}
+                  label="Blood Type"
+                  value={donor.bloodType}
+                />
               </div>
             </section>
 
@@ -145,9 +201,22 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
                 Contact Information
               </h3>
               <div className="grid grid-cols-1 gap-4">
-                <InfoField icon={<Phone className="w-4 h-4" />} label="Phone" value={donor.phone} />
-                <InfoField icon={<Mail className="w-4 h-4" />} label="Email" value={donor.email} clickable />
-                <InfoField icon={<MapPin className="w-4 h-4" />} label="Location" value={donor.location} />
+                <InfoField
+                  icon={<Phone className="w-4 h-4" />}
+                  label="Phone"
+                  value={donor.phone}
+                />
+                <InfoField
+                  icon={<Mail className="w-4 h-4" />}
+                  label="Email"
+                  value={donor.email}
+                  clickable
+                />
+                <InfoField
+                  icon={<MapPin className="w-4 h-4" />}
+                  label="Location"
+                  value={donor.location}
+                />
               </div>
             </section>
 
@@ -157,20 +226,11 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
                 <Calendar className="w-5 h-5 text-[#A30000]" />
                 Additional Details
               </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <InfoField icon={<Calendar className="w-4 h-4" />} label="Registered" value={formatDate(donor.createdAt)} />
+              <div className="grid grid-cols-1 gap-4">
                 <InfoField
-                  icon={<Droplet className="w-4 h-4" />}
-                  label="Status"
-                  value={
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
-                        donor.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {donor.isActive ? "Active" : "Inactive"}
-                    </span>
-                  }
+                  icon={<Calendar className="w-4 h-4" />}
+                  label="Registered"
+                  value={formatDate(donor.createdAt)}
                 />
               </div>
             </section>
@@ -184,6 +244,15 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
             >
               Close
             </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleteDonor.isPending}
+              className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {deleteDonor.isPending ? "Deleting..." : "Delete Donor"}
+            </button>
             <a
               href={`mailto:${donor.email}`}
               className="px-6 py-2.5 bg-[#A30000] text-white rounded-lg font-medium hover:bg-[#8B0000] transition-colors inline-flex items-center gap-2"
@@ -192,6 +261,12 @@ const DonorDetailsModal: React.FC<DonorDetailsModalProps> = ({ donor, onClose })
               Contact Donor
             </a>
           </div>
+
+          {deleteDonor.isError && (
+            <div className="px-8 pb-6 text-sm text-red-700 bg-red-50 border-t border-red-100">
+              {(deleteDonor.error as Error).message}
+            </div>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>
@@ -206,14 +281,23 @@ interface InfoFieldProps {
   clickable?: boolean;
 }
 
-const InfoField: React.FC<InfoFieldProps> = ({ icon, label, value, clickable }) => {
+const InfoField: React.FC<InfoFieldProps> = ({
+  icon,
+  label,
+  value,
+  clickable,
+}) => {
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
         {icon}
         <span className="font-medium">{label}</span>
       </div>
-      <div className={`text-gray-900 font-semibold ${clickable ? "text-[#A30000] hover:underline cursor-pointer" : ""}`}>
+      <div
+        className={`text-gray-900 font-semibold ${
+          clickable ? "text-[#A30000] hover:underline cursor-pointer" : ""
+        }`}
+      >
         {value}
       </div>
     </div>
