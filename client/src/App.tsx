@@ -32,7 +32,7 @@ function Router() {
       <Route path="/request" component={RequestBlood} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignUpPage} />
-      <Route path="/admin"> <Layout> <> <Dashboard /> </> </Layout> </Route>
+      <Route path="/admin"> <Layout> <ProtectedRoute> <Dashboard /> </ProtectedRoute> </Layout> </Route>
       <Route path="/admin/donors"> <Layout> <> <DonorView/> </> </Layout> </Route>
       <Route path="/admin/donors/add"> <Layout> <> <DonorForm/> </> </Layout> </Route>
       <Route path="/admin/hospitals"> <Layout> <> <HospitalsView/> </> </Layout> </Route>
