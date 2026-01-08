@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 interface User {
   id: string;
   username: string;
+  approved?: boolean;
 }
 
 interface AuthContextType {
@@ -33,10 +34,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const user = authData?.user || null;
+  const user =
+    authData?.user?.approved === false ? null : authData?.user || null;
 
   const loginMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
+    mutationFn: async ({
+      username,
+      password,
+    }: {
+      username: string;
+      password: string;
+    }) => {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,6 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (!res.ok) {
         const data = await res.json();
+        if (res.status === 403) {
+          throw new Error(
+            "Your account is awaiting approval by an administrator."
+          );
+        }
         throw new Error(data.message || "Login failed");
       }
       return res.json();
@@ -55,7 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const signupMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
+    mutationFn: async ({
+      username,
+      password,
+    }: {
+      username: string;
+      password: string;
+    }) => {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,11 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextType = { user, isLoading, login, signup, logout };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

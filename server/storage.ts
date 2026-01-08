@@ -53,7 +53,9 @@ export interface DashboardStats {
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser & { approved?: boolean }): Promise<User>;
+  getAllAdmins(): Promise<User[]>;
+  approveAdmin(id: string): Promise<User | undefined>;
   createDonor(donor: InsertDonor): Promise<Donor>;
   getAllDonors(): Promise<Donor[]>;
   deleteDonor(id: string): Promise<boolean>;
@@ -103,9 +105,26 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(
+    insertUser: InsertUser & { approved?: boolean }
+  ): Promise<User> {
     const database = this.ensureDb();
     const result = await database.insert(users).values(insertUser).returning();
+    return result[0];
+  }
+
+  async getAllAdmins(): Promise<User[]> {
+    const database = this.ensureDb();
+    return await database.select().from(users);
+  }
+
+  async approveAdmin(id: string): Promise<User | undefined> {
+    const database = this.ensureDb();
+    const result = await database
+      .update(users)
+      .set({ approved: true })
+      .where(eq(users.id, id))
+      .returning();
     return result[0];
   }
 

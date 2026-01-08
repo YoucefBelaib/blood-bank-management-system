@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 // Load root .env first, then server/.env to allow server-specific overrides
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-dotenv.config({ path: path.resolve(process.cwd(), "server", ".env") });
+dotenv.config({ path: "server/.env" });
 
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";

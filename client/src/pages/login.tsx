@@ -32,8 +32,11 @@ export default function LoginPage() {
       await login(username.trim(), password);
       setPendingRedirect(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
+      const rawMessage = err instanceof Error ? err.message : "Login failed";
+      const friendly = rawMessage.includes("awaiting approval")
+        ? "Your account is awaiting approval by an administrator."
+        : rawMessage;
+      setError(friendly);
     } finally {
       setIsSubmitting(false);
     }

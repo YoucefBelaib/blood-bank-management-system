@@ -235,18 +235,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const derived = crypto.scryptSync(password, salt, 64).toString("hex");
       const stored = `${salt}:${derived}`;
 
-      const user = await storage.createUser({ username, password: stored });
-
-      // create session
-      try {
-        (req as any).session.userId = user.id;
-      } catch {
-        // ignore if session not configured
-      }
+      await storage.createUser({ username, password: stored, approved: false });
 
       return res
         .status(201)
-        .json({ user: { id: user.id, username: user.username } });
+        .json({ message: "Account created and pending admin approval" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -261,6 +254,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByUsername(username);
       if (!user)
         return res.status(401).json({ message: "Invalid credentials" });
+
+      if (user.approved === false) {
+        return res
+          .status(403)
+          .json({ message: "Your account is pending approval" });
+      }
 
       const [salt, hash] = (user.password || "").split(":");
       if (!salt || !hash)
@@ -280,7 +279,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (req as any).session.userId = user.id;
       } catch {}
 
-      return res.json({ user: { id: user.id, username: user.username } });
+      return res.json({
+        user: { id: user.id, username: user.username, approved: user.approved },
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/users", async (_req, res) => {
+    try {
+      const admins = await storage.getAllAdmins();
+      res.json(admins);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/admin/users/:id/approve", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!id || typeof id !== "string") {
+        return res.status(400).json({ message: "Invalid user id" });
+      }
+
+      const approvedUser = await storage.approveAdmin(id);
+      if (!approvedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        user: {
+          id: approvedUser.id,
+          username: approvedUser.username,
+          approved: approvedUser.approved,
+        },
+      });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -304,7 +338,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       if (!user) return res.status(401).json({ message: "Not authenticated" });
 
-      return res.json({ user: { id: user.id, username: user.username } });
+      return res.json({
+        user: { id: user.id, username: user.username, approved: user.approved },
+      });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

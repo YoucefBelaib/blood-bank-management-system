@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useAuth } from "../lib/auth";
-import { useLocation, Link } from "wouter";
+import { Link } from "wouter";
 
 export default function SignUpPage() {
   const { signup } = useAuth();
-  const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +16,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       await signup(username, password);
-      setLocation("/admin");
+      setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Signup failed");
     } finally {
@@ -35,6 +35,12 @@ export default function SignUpPage() {
           </div>
         )}
 
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md text-sm">
+            Account created. Please wait for admin approval.
+          </div>
+        )}
+
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
           <input
@@ -42,7 +48,8 @@ export default function SignUpPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A30000]"
+            disabled={success}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A30000] disabled:opacity-60"
           />
         </div>
 
@@ -53,13 +60,14 @@ export default function SignUpPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A30000]"
+            disabled={success}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A30000] disabled:opacity-60"
           />
         </div>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || success}
           className="w-full bg-[#A30000] text-white py-2 rounded-md font-medium hover:bg-[#8B0000] transition disabled:opacity-50"
         >
           {loading ? "Creating account..." : "Create Account"}

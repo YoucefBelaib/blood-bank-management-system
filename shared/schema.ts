@@ -1,16 +1,28 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  integer,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  approved: boolean("approved").notNull().default(false),
 });
 
 export const donors = pgTable("donors", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   fullName: text("full_name").notNull(),
   age: integer("age").notNull(),
   gender: text("gender").notNull(),
@@ -23,7 +35,9 @@ export const donors = pgTable("donors", {
 });
 
 export const bloodInventory = pgTable("blood_inventory", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   bloodType: text("blood_type").notNull().unique(),
   unitsAvailable: integer("units_available").notNull().default(0),
   status: text("status").notNull().default("Available"),
@@ -31,7 +45,9 @@ export const bloodInventory = pgTable("blood_inventory", {
 });
 
 export const hospitals = pgTable("hospitals", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   location: text("location").notNull(),
   phone: text("phone").notNull(),
@@ -44,7 +60,9 @@ export const hospitals = pgTable("hospitals", {
 });
 
 export const bloodRequests = pgTable("blood_requests", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   hospitalId: varchar("hospital_id"),
   hospitalName: text("hospital_name").notNull(),
   bloodType: text("blood_type").notNull(),
@@ -58,7 +76,9 @@ export const bloodRequests = pgTable("blood_requests", {
 });
 
 export const statistics = pgTable("statistics", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   activeDonors: integer("active_donors").notNull().default(0),
   totalBloodUnits: integer("total_blood_units").notNull().default(0),
   partnerHospitals: integer("partner_hospitals").notNull().default(0),
