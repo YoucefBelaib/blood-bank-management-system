@@ -1,13 +1,23 @@
-import { getDb } from "./storage";
-import { bloodInventory, hospitals, statistics, bloodRequests, donors } from "@shared/schema";
+import { getDb } from "./infrastructure/database/drizzle";
+import {
+  bloodInventory,
+  hospitals,
+  statistics,
+  bloodRequests,
+  donors,
+  users,
+} from "@shared/schema";
 import { sql, eq } from "drizzle-orm";
 import crypto from "crypto";
+import { promisify } from "util";
 
-// Helper function to hash passwords
-function hashPassword(password: string): string {
+const scryptAsync = promisify(crypto.scrypt);
+
+// Helper function to hash passwords (matches AuthService format)
+async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomBytes(16).toString("hex");
-  const derived = crypto.scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${derived}`;
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
 }
 
 export async function seedDatabase() {
@@ -21,7 +31,8 @@ export async function seedDatabase() {
     }
 
     // Seed blood inventory
-    await db.insert(bloodInventory)
+    await db
+      .insert(bloodInventory)
       .values([
         { bloodType: "A+", unitsAvailable: 32, status: "Available" },
         { bloodType: "A-", unitsAvailable: 10, status: "Low" },
@@ -40,10 +51,27 @@ export async function seedDatabase() {
           lastUpdated: sql`NOW()`,
         },
       });
+    // Seed or update admin user
+    const adminPassword = await hashPassword("admin123");
+    await db
+      .insert(users)
+      .values({
+        username: "admin",
+        password: adminPassword,
+        approved: true,
+      })
+      .onConflictDoUpdate({
+        target: users.username,
+        set: {
+          password: adminPassword,
+          approved: true,
+        },
+      });
+    console.log("Admin user ready (username: admin, password: admin123)");
 
     // Seed donors if none exist
     const existingDonors = await db.select().from(donors).limit(1);
-    
+
     if (existingDonors.length === 0) {
       await db.insert(donors).values([
         {
@@ -152,11 +180,11 @@ export async function seedDatabase() {
 
     // Seed hospitals if none exist
     const existingHospitals = await db.select().from(hospitals).limit(1);
-    
+
     if (existingHospitals.length === 0) {
       // All hospital passwords are "hospital123" for demo purposes
-      const demoPassword = hashPassword("hospital123");
-      
+      const demoPassword = await hashPassword("hospital123");
+
       await db.insert(hospitals).values([
         {
           name: "City General Hospital",
@@ -224,12 +252,20 @@ export async function seedDatabase() {
 
     // Seed blood requests linked to hospitals
     const existingRequests = await db.select().from(bloodRequests).limit(1);
-    
+
     if (existingRequests.length === 0) {
       // Get hospital IDs for linking
-      const cityHospital = await db.select().from(hospitals).where(eq(hospitals.email, "contact@cityhospital.dz")).limit(1);
-      const regionalMed = await db.select().from(hospitals).where(eq(hospitals.email, "info@regionalmed.dz")).limit(1);
-      
+      const cityHospital = await db
+        .select()
+        .from(hospitals)
+        .where(eq(hospitals.email, "contact@cityhospital.dz"))
+        .limit(1);
+      const regionalMed = await db
+        .select()
+        .from(hospitals)
+        .where(eq(hospitals.email, "info@regionalmed.dz"))
+        .limit(1);
+
       const cityHospitalId = cityHospital[0]?.id;
       const regionalMedId = regionalMed[0]?.id;
 
@@ -325,7 +361,7 @@ export async function seedDatabase() {
 
     // Seed or update statistics
     const existingStats = await db.select().from(statistics).limit(1);
-    
+
     if (existingStats.length === 0) {
       await db.insert(statistics).values({
         activeDonors: 10,

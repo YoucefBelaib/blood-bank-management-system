@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Lock, User } from "lucide-react";
-import { useAuth } from "@/lib/auth";
+import { useAuthContext } from "@/features/auth";
 import { Link, useLocation } from "wouter";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 
 export default function LoginPage() {
-  const { login, user, isLoading } = useAuth();
+  const { login, user, isLoading } = useAuthContext();
   const [, setLocation] = useLocation();
 
   const [username, setUsername] = useState("");
