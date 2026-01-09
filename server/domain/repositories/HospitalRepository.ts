@@ -6,4 +6,8 @@ export interface IHospitalRepository {
   findByEmail(email: string): Promise<Hospital | undefined>;
   create(data: CreateHospitalInput): Promise<Hospital>;
   updateStatus(id: string, status: string): Promise<Hospital | undefined>;
+  updatePassword(
+    id: string,
+    hashedPassword: string
+  ): Promise<Hospital | undefined>;
 }

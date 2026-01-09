@@ -9,6 +9,14 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   signup: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  requestPasswordReset: (username: string) => Promise<{ message: string }>;
+  isRequestingReset: boolean;
+  validateResetToken: (token: string) => Promise<{ valid: boolean }>;
+  resetPassword: (
+    token: string,
+    newPassword: string
+  ) => Promise<{ success: boolean; message: string }>;
+  isResettingPassword: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

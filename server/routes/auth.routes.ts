@@ -11,6 +11,14 @@ export function createAuthRoutes(authController: AuthController): Router {
   router.post("/logout", asyncHandler(authController.logout));
   router.get("/user", asyncHandler(authController.getCurrentUser));
 
+  // Password Reset routes (public - no auth required)
+  router.post("/forgot-password", asyncHandler(authController.forgotPassword));
+  router.get(
+    "/validate-reset-token",
+    asyncHandler(authController.validateResetToken)
+  );
+  router.post("/reset-password", asyncHandler(authController.resetPassword));
+
   // Admin management routes
   router.get(
     "/admin/users",

@@ -66,6 +66,39 @@ export class HospitalController {
     res.json(hospital);
   };
 
+  // Password Reset
+  /**
+   * Initiates password reset flow.
+   * Always returns success to prevent user enumeration.
+   */
+  forgotPassword = async (req: Request, res: Response): Promise<void> => {
+    const { email } = req.body;
+    const result = await this.hospitalService.requestPasswordReset(email);
+    res.json(result);
+  };
+
+  /**
+   * Validates a password reset token.
+   * Returns whether the token is valid (without revealing the hospital).
+   */
+  validateResetToken = async (req: Request, res: Response): Promise<void> => {
+    const { token } = req.query;
+    const result = await this.hospitalService.validateResetToken(
+      token as string
+    );
+    // Only return validity, not the hospital ID (security)
+    res.json({ valid: result.valid });
+  };
+
+  /**
+   * Resets password using a valid token.
+   */
+  resetPassword = async (req: Request, res: Response): Promise<void> => {
+    const { token, newPassword } = req.body;
+    const result = await this.hospitalService.resetPassword(token, newPassword);
+    res.json(result);
+  };
+
   // Blood Requests
   getAllBloodRequests = async (req: Request, res: Response): Promise<void> => {
     const requests = await this.hospitalService.getAllBloodRequests();

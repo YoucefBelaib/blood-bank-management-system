@@ -5,7 +5,12 @@ import {
   DrizzleHospitalRepository,
   DrizzleBloodRequestRepository,
   DrizzleStatisticsRepository,
+  DrizzlePasswordResetTokenRepository,
+  DrizzleUserPasswordResetTokenRepository,
 } from "../infrastructure/database/repositories";
+
+// Infrastructure - Email Service
+import { EmailService } from "../infrastructure/email/email.service";
 
 // Services
 import {
@@ -29,14 +34,26 @@ const donorRepository = new DrizzleDonorRepository();
 const hospitalRepository = new DrizzleHospitalRepository();
 const bloodRequestRepository = new DrizzleBloodRequestRepository();
 const statisticsRepository = new DrizzleStatisticsRepository();
+const passwordResetTokenRepository = new DrizzlePasswordResetTokenRepository();
+const userPasswordResetTokenRepository =
+  new DrizzleUserPasswordResetTokenRepository();
+
+// Infrastructure service instances
+const emailService = new EmailService();
 
 // Service instances
-const authService = new AuthService(userRepository);
+const authService = new AuthService(
+  userRepository,
+  userPasswordResetTokenRepository,
+  emailService
+);
 const donorService = new DonorService(donorRepository, statisticsRepository);
 const hospitalService = new HospitalService(
   hospitalRepository,
   bloodRequestRepository,
-  statisticsRepository
+  statisticsRepository,
+  passwordResetTokenRepository,
+  emailService
 );
 const statisticsService = new StatisticsService(
   statisticsRepository,

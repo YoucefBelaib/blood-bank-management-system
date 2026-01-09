@@ -50,4 +50,17 @@ export class DrizzleHospitalRepository implements IHospitalRepository {
       .returning();
     return result[0] as Hospital | undefined;
   }
+
+  async updatePassword(
+    id: string,
+    hashedPassword: string
+  ): Promise<Hospital | undefined> {
+    const db = getDb();
+    const result = await db
+      .update(hospitals)
+      .set({ password: hashedPassword })
+      .where(eq(hospitals.id, id))
+      .returning();
+    return result[0] as Hospital | undefined;
+  }
 }

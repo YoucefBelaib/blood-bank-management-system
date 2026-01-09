@@ -98,6 +98,14 @@ export default function LoginPage() {
                 required
                 className="w-full h-12 px-4 border border-red-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-600/20 outline-none transition-all"
               />
+              <div className="mt-2 text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-red-600 hover:text-red-800 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             {error && (

@@ -14,6 +14,20 @@ export function createHospitalRoutes(
   router.post("/auth/logout", asyncHandler(hospitalController.logout));
   router.get("/auth/me", asyncHandler(hospitalController.getCurrentHospital));
 
+  // Password Reset (public endpoints - no auth required)
+  router.post(
+    "/auth/forgot-password",
+    asyncHandler(hospitalController.forgotPassword)
+  );
+  router.get(
+    "/auth/validate-reset-token",
+    asyncHandler(hospitalController.validateResetToken)
+  );
+  router.post(
+    "/auth/reset-password",
+    asyncHandler(hospitalController.resetPassword)
+  );
+
   // Blood Requests (must be before /:id to avoid matching "requests" as id)
   router.get(
     "/requests/all",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, Mail, Lock, ArrowRight, Droplet } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { BloodDropsAnimation } from "@/components/BloodDrop";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
@@ -96,6 +96,14 @@ export default function HospitalLogin() {
                 className="w-full h-12 px-4 border border-red-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-600/20 outline-none transition-all"
                 required
               />
+              <div className="mt-2 text-right">
+                <Link
+                  href="/hospital/forgot-password"
+                  className="text-sm text-red-600 hover:text-red-800 transition-colors font-medium"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <motion.button

@@ -95,6 +95,20 @@ export function useHospitalAuth() {
     },
   });
 
+  const requestPasswordResetMutation = useMutation({
+    mutationFn: (email: string) => hospitalsApi.requestPasswordReset(email),
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => hospitalsApi.resetPassword(token, newPassword),
+  });
+
   const login = async (email: string, password: string) => {
     return loginMutation.mutateAsync({ email, password });
   };
@@ -107,6 +121,18 @@ export function useHospitalAuth() {
     return logoutMutation.mutateAsync();
   };
 
+  const requestPasswordReset = async (email: string) => {
+    return requestPasswordResetMutation.mutateAsync(email);
+  };
+
+  const validateResetToken = async (token: string) => {
+    return hospitalsApi.validateResetToken(token);
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    return resetPasswordMutation.mutateAsync({ token, newPassword });
+  };
+
   return {
     hospital,
     isLoading,
@@ -114,6 +140,11 @@ export function useHospitalAuth() {
     login,
     signup,
     logout,
+    requestPasswordReset,
+    isRequestingReset: requestPasswordResetMutation.isPending,
+    validateResetToken,
+    resetPassword,
+    isResettingPassword: resetPasswordMutation.isPending,
   };
 }
 

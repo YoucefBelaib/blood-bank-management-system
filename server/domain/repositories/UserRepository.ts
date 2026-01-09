@@ -10,4 +10,5 @@ export interface IUserRepository {
   }): Promise<User>;
   findAll(): Promise<User[]>;
   approve(id: string): Promise<User | undefined>;
+  updatePassword(id: string, hashedPassword: string): Promise<User | undefined>;
 }

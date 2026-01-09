@@ -53,4 +53,23 @@ export class AuthController {
     const user = await this.authService.approveAdmin(id);
     res.json(user);
   };
+
+  // Password Reset endpoints
+  forgotPassword = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.body;
+    const result = await this.authService.requestPasswordReset(username);
+    res.json(result);
+  };
+
+  validateResetToken = async (req: Request, res: Response): Promise<void> => {
+    const { token } = req.query;
+    const result = await this.authService.validateResetToken(token as string);
+    res.json(result);
+  };
+
+  resetPassword = async (req: Request, res: Response): Promise<void> => {
+    const { token, newPassword } = req.body;
+    const result = await this.authService.resetPassword(token, newPassword);
+    res.json(result);
+  };
 }

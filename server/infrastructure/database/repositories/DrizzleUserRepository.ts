@@ -45,4 +45,17 @@ export class DrizzleUserRepository implements IUserRepository {
       .returning();
     return result[0] as User | undefined;
   }
+
+  async updatePassword(
+    id: string,
+    hashedPassword: string
+  ): Promise<User | undefined> {
+    const db = getDb();
+    const result = await db
+      .update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.id, id))
+      .returning();
+    return result[0] as User | undefined;
+  }
 }

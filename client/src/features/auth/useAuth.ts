@@ -50,6 +50,20 @@ export function useAuth() {
     },
   });
 
+  const requestPasswordResetMutation = useMutation({
+    mutationFn: (username: string) => authApi.requestPasswordReset(username),
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => authApi.resetPassword(token, newPassword),
+  });
+
   const login = async (username: string, password: string) => {
     await loginMutation.mutateAsync({ username, password });
   };
@@ -62,6 +76,18 @@ export function useAuth() {
     await logoutMutation.mutateAsync();
   };
 
+  const requestPasswordReset = async (username: string) => {
+    return requestPasswordResetMutation.mutateAsync(username);
+  };
+
+  const validateResetToken = async (token: string) => {
+    return authApi.validateResetToken(token);
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    return resetPasswordMutation.mutateAsync({ token, newPassword });
+  };
+
   return {
     user,
     isLoading,
@@ -69,5 +95,10 @@ export function useAuth() {
     login,
     signup,
     logout,
+    requestPasswordReset,
+    isRequestingReset: requestPasswordResetMutation.isPending,
+    validateResetToken,
+    resetPassword,
+    isResettingPassword: resetPasswordMutation.isPending,
   };
 }

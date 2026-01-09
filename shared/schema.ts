@@ -85,6 +85,41 @@ export const statistics = pgTable("statistics", {
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
 });
 
+// Password Reset Tokens for Hospital accounts
+// Tokens are stored as hashed values for security
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  hospitalId: varchar("hospital_id")
+    .notNull()
+    .references(() => hospitals.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(), // SHA-256 hash of the token
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"), // null if not yet used
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
+// Password Reset Tokens for User (admin) accounts
+// Tokens are stored as hashed values for security
+export const userPasswordResetTokens = pgTable("user_password_reset_tokens", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(), // SHA-256 hash of the token
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"), // null if not yet used
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type UserPasswordResetToken =
+  typeof userPasswordResetTokens.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,

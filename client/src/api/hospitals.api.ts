@@ -6,6 +6,19 @@ import type {
   CreateBloodRequestInput,
 } from "@/types";
 
+export interface PasswordResetResponse {
+  message: string;
+}
+
+export interface ValidateTokenResponse {
+  valid: boolean;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 export const hospitalsApi = {
   // Hospital CRUD
   getAll: (): Promise<Hospital[]> => {
@@ -40,6 +53,30 @@ export const hospitalsApi = {
 
   getCurrentHospital: (): Promise<Hospital | null> => {
     return apiClient.get<Hospital>("/hospitals/auth/me").catch(() => null);
+  },
+
+  // Password Reset
+  requestPasswordReset: (email: string): Promise<PasswordResetResponse> => {
+    return apiClient.post<PasswordResetResponse>(
+      "/hospitals/auth/forgot-password",
+      { email }
+    );
+  },
+
+  validateResetToken: (token: string): Promise<ValidateTokenResponse> => {
+    return apiClient.get<ValidateTokenResponse>(
+      `/hospitals/auth/validate-reset-token?token=${encodeURIComponent(token)}`
+    );
+  },
+
+  resetPassword: (
+    token: string,
+    newPassword: string
+  ): Promise<ResetPasswordResponse> => {
+    return apiClient.post<ResetPasswordResponse>(
+      "/hospitals/auth/reset-password",
+      { token, newPassword }
+    );
   },
 
   // Blood Requests
