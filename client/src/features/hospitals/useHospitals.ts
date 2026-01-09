@@ -185,3 +185,26 @@ export function useHospitalBloodRequests() {
     isCreating: createMutation.isPending,
   };
 }
+
+// Public blood request (for non-authenticated users)
+export function usePublicBloodRequest() {
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: (data: CreateBloodRequestInput) =>
+      hospitalsApi.createPublicBloodRequest(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blood-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["blood-inventory"] });
+    },
+  });
+
+  const createRequest = async (data: CreateBloodRequestInput) => {
+    return createMutation.mutateAsync(data);
+  };
+
+  return {
+    createRequest,
+    isCreating: createMutation.isPending,
+  };
+}

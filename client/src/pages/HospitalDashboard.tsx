@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,14 +19,11 @@ import {
   Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { BloodRequest } from "../../../shared/schema";
-
-interface Hospital {
-  id: string;
-  name: string;
-  email: string;
-  location: string;
-}
+import {
+  useHospitalAuth,
+  useHospitalBloodRequests,
+} from "@/features/hospitals";
+import type { BloodRequest } from "@/types";
 
 // Format date
 const formatDate = (date: Date | string): string => {
@@ -84,7 +80,10 @@ interface RequestModalProps {
   onClose: () => void;
 }
 
-const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) => {
+const RequestDetailModal: React.FC<RequestModalProps> = ({
+  request,
+  onClose,
+}) => {
   React.useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -123,7 +122,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">Blood Request Details</h2>
-                  <p className="text-red-100 text-sm">Request ID: {request.id.slice(0, 8)}...</p>
+                  <p className="text-red-100 text-sm">
+                    Request ID: {request.id.slice(0, 8)}...
+                  </p>
                 </div>
               </div>
               <button
@@ -139,11 +140,20 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
           <div className="p-6 space-y-4">
             {/* Status & Urgency */}
             <div className="flex items-center gap-3">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(request.status)}`}>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(
+                  request.status
+                )}`}
+              >
                 {getStatusIcon(request.status)}
-                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                {request.status.charAt(0).toUpperCase() +
+                  request.status.slice(1)}
               </span>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 ${getUrgencyColor(request.urgencyLevel)}`}>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 ${getUrgencyColor(
+                  request.urgencyLevel
+                )}`}
+              >
                 <AlertTriangle className="w-4 h-4" />
                 {request.urgencyLevel}
               </span>
@@ -156,7 +166,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                   <Droplet className="w-4 h-4" />
                   <span className="text-sm font-medium">Blood Type</span>
                 </div>
-                <p className="text-2xl font-bold text-red-900">{request.bloodType}</p>
+                <p className="text-2xl font-bold text-red-900">
+                  {request.bloodType}
+                </p>
               </div>
 
               <div className="bg-red-50 rounded-xl p-4">
@@ -164,7 +176,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                   <Package className="w-4 h-4" />
                   <span className="text-sm font-medium">Units Needed</span>
                 </div>
-                <p className="text-2xl font-bold text-red-900">{request.unitsNeeded}</p>
+                <p className="text-2xl font-bold text-red-900">
+                  {request.unitsNeeded}
+                </p>
               </div>
             </div>
 
@@ -174,7 +188,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                 <MapPin className="w-5 h-5 text-red-600" />
                 <div>
                   <p className="text-xs text-gray-500">Location</p>
-                  <p className="text-sm font-medium text-gray-900">{request.location}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {request.location}
+                  </p>
                 </div>
               </div>
 
@@ -182,7 +198,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                 <Phone className="w-5 h-5 text-red-600" />
                 <div>
                   <p className="text-xs text-gray-500">Phone</p>
-                  <p className="text-sm font-medium text-gray-900">{request.phone}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {request.phone}
+                  </p>
                 </div>
               </div>
 
@@ -190,7 +208,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                 <Mail className="w-5 h-5 text-red-600" />
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{request.email}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {request.email}
+                  </p>
                 </div>
               </div>
 
@@ -198,7 +218,9 @@ const RequestDetailModal: React.FC<RequestModalProps> = ({ request, onClose }) =
                 <Calendar className="w-5 h-5 text-red-600" />
                 <div>
                   <p className="text-xs text-gray-500">Request Date</p>
-                  <p className="text-sm font-medium text-gray-900">{formatDate(request.createdAt)}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {formatDate(request.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -223,48 +245,42 @@ export default function HospitalDashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(
+    null
+  );
 
-  // Check authentication
-  const { data: authData, isLoading: authLoading } = useQuery<{ hospital: Hospital }>({
-    queryKey: ["hospital-auth"],
-    queryFn: async () => {
-      const response = await fetch("/api/hospital/auth/me");
-      if (!response.ok) throw new Error("Not authenticated");
-      return response.json();
-    },
-    retry: false,
-  });
+  // Check authentication using hook
+  const {
+    hospital,
+    isLoading: authLoading,
+    isAuthenticated,
+    logout,
+  } = useHospitalAuth();
 
-  // Fetch hospital's blood requests
-  const { data: requests = [], isLoading: requestsLoading } = useQuery<BloodRequest[]>({
-    queryKey: ["hospital-requests"],
-    queryFn: async () => {
-      const response = await fetch("/api/hospital/requests");
-      if (!response.ok) throw new Error("Failed to fetch requests");
-      return response.json();
-    },
-    enabled: !!authData,
-  });
+  // Fetch hospital's blood requests using hook
+  const { requests, isLoading: requestsLoading } = useHospitalBloodRequests();
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/hospital/auth/logout", { method: "POST" });
-      if (!response.ok) throw new Error("Logout failed");
-      return response.json();
-    },
-    onSuccess: () => {
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
       setLocation("/hospital");
-    },
-  });
+    } catch (error) {
+      toast({
+        title: "Logout Failed",
+        description:
+          error instanceof Error ? error.message : "Failed to logout",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Redirect if not authenticated
   React.useEffect(() => {
-    if (!authLoading && !authData) {
+    if (!authLoading && !isAuthenticated) {
       setLocation("/hospital");
     }
-  }, [authLoading, authData, setLocation]);
+  }, [authLoading, isAuthenticated, setLocation]);
 
   // Filter requests based on search
   const filteredRequests = useMemo(() => {
@@ -293,7 +309,7 @@ export default function HospitalDashboard() {
     );
   }
 
-  if (!authData) return null;
+  if (!hospital) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-red-50 to-white">
@@ -306,8 +322,10 @@ export default function HospitalDashboard() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-red-950">{authData.hospital.name}</h1>
-                <p className="text-sm text-red-600">{authData.hospital.location}</p>
+                <h1 className="text-xl font-bold text-red-950">
+                  {hospital.name}
+                </h1>
+                <p className="text-sm text-red-600">{hospital.location}</p>
               </div>
             </div>
 
@@ -319,7 +337,7 @@ export default function HospitalDashboard() {
                 </a>
               </Link>
               <button
-                onClick={() => logoutMutation.mutate()}
+                onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
                 <LogOut className="w-5 h-5" />
@@ -338,7 +356,9 @@ export default function HospitalDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-600">Total Requests</p>
-                <p className="text-3xl font-bold text-red-950">{requests.length}</p>
+                <p className="text-3xl font-bold text-red-950">
+                  {requests.length}
+                </p>
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
                 <Droplet className="w-6 h-6 text-red-600" />
@@ -394,7 +414,9 @@ export default function HospitalDashboard() {
           {/* Table Header */}
           <div className="p-6 border-b border-red-100">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-red-950">Request History</h2>
+              <h2 className="text-xl font-bold text-red-950">
+                Request History
+              </h2>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -428,12 +450,24 @@ export default function HospitalDashboard() {
               <table className="w-full">
                 <thead className="bg-red-50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Blood Type</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Units</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Urgency</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Date</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">Action</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Blood Type
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Units
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Urgency
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-red-900">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-red-50">
@@ -448,23 +482,38 @@ export default function HospitalDashboard() {
                           <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                             <Droplet className="w-5 h-5 text-red-600" />
                           </div>
-                          <span className="font-bold text-red-900">{request.bloodType}</span>
+                          <span className="font-bold text-red-900">
+                            {request.bloodType}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-700">{request.unitsNeeded} units</td>
+                      <td className="px-6 py-4 text-gray-700">
+                        {request.unitsNeeded} units
+                      </td>
                       <td className="px-6 py-4">
-                        <span className={`flex items-center gap-1 ${getUrgencyColor(request.urgencyLevel)}`}>
+                        <span
+                          className={`flex items-center gap-1 ${getUrgencyColor(
+                            request.urgencyLevel
+                          )}`}
+                        >
                           <AlertTriangle className="w-4 h-4" />
                           {request.urgencyLevel}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(request.status)}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                            request.status
+                          )}`}
+                        >
                           {getStatusIcon(request.status)}
-                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                          {request.status.charAt(0).toUpperCase() +
+                            request.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-500">{formatDate(request.createdAt)}</td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {formatDate(request.createdAt)}
+                      </td>
                       <td className="px-6 py-4">
                         <button
                           onClick={(e) => {

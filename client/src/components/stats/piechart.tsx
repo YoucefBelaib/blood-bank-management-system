@@ -1,25 +1,11 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from "recharts";
-
-interface DashboardStats {
-  donorsByBloodType: { name: string; value: number }[];
-  donorsByLocation: { name: string; value: number }[];
-  totalDonors: number;
-  monthlyDonorStats: { month: string; thisYear: number; lastYear: number }[];
-}
+import { useDashboardStats } from "@/features/statistics";
 
 const COLORS = ["#111827", "#60A5FA", "#EF4444", "#93C5FD", "#F87171"];
 
 export default function PieChartComponent() {
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats"],
-    queryFn: async () => {
-      const response = await fetch("/api/dashboard-stats");
-      if (!response.ok) throw new Error("Failed to fetch dashboard stats");
-      return response.json();
-    },
-  });
+  const { stats, isLoading } = useDashboardStats();
 
   const chartData = stats?.donorsByLocation || [];
   const total = chartData.reduce((s, d) => s + d.value, 0);
@@ -64,7 +50,10 @@ export default function PieChartComponent() {
                 endAngle={-270}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
             </PieChart>
@@ -78,7 +67,9 @@ export default function PieChartComponent() {
         </div>
 
         <div className="w-1/2 flex flex-col items-start justify-center px-2">
-          <h3 className="text-sm text-[#0f172a] font-semibold mb-3">Donors By Location</h3>
+          <h3 className="text-sm text-[#0f172a] font-semibold mb-3">
+            Donors By Location
+          </h3>
           <ul className="flex flex-col gap-3">
             {chartData.map((item, idx) => (
               <li key={item.name} className="flex items-center gap-3">
@@ -86,7 +77,9 @@ export default function PieChartComponent() {
                   className="w-3 h-3 rounded-full shadow-sm"
                   style={{ background: COLORS[idx % COLORS.length] }}
                 />
-                <span className="text-sm text-gray-700 w-28 truncate">{item.name}</span>
+                <span className="text-sm text-gray-700 w-28 truncate">
+                  {item.name}
+                </span>
                 <span className="text-sm text-gray-500">
                   {total > 0 ? ((item.value / total) * 100).toFixed(1) : 0}%
                 </span>

@@ -1,5 +1,4 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -9,23 +8,10 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
-
-interface DashboardStats {
-  donorsByBloodType: { name: string; value: number }[];
-  donorsByLocation: { name: string; value: number }[];
-  totalDonors: number;
-  monthlyDonorStats: { month: string; thisYear: number; lastYear: number }[];
-}
+import { useDashboardStats } from "@/features/statistics";
 
 export default function BarChartComponent() {
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats"],
-    queryFn: async () => {
-      const response = await fetch("/api/dashboard-stats");
-      if (!response.ok) throw new Error("Failed to fetch dashboard stats");
-      return response.json();
-    },
-  });
+  const { stats, isLoading } = useDashboardStats();
 
   const chartData = stats?.donorsByBloodType || [];
 
@@ -45,12 +31,15 @@ export default function BarChartComponent() {
     );
   }
 
-  const maxValue = Math.max(...chartData.map(d => d.value), 10);
+  const maxValue = Math.max(...chartData.map((d) => d.value), 10);
 
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 6 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 6, right: 8, left: 0, bottom: 6 }}
+        >
           <XAxis
             dataKey="name"
             axisLine={false}

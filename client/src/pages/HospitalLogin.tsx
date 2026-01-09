@@ -2,63 +2,38 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, Mail, Lock, ArrowRight, Droplet } from "lucide-react";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { BloodDropsAnimation } from "@/components/BloodDrop";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
-
-interface HospitalLoginData {
-  email: string;
-  password: string;
-}
-
-interface HospitalResponse {
-  hospital: {
-    id: string;
-    name: string;
-    email: string;
-    location: string;
-  };
-}
+import { useHospitalAuth } from "@/features/hospitals";
 
 export default function HospitalLogin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { login } = useHospitalAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: HospitalLoginData): Promise<HospitalResponse> => {
-      const response = await fetch("/api/hospital/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
-      }
-      return response.json();
-    },
-    onSuccess: (data) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    try {
+      const hospital = await login(email, password);
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${data.hospital.name}!`,
+        description: `Welcome back, ${hospital.name}!`,
       });
       setLocation("/hospital/dashboard");
-    },
-    onError: (error: Error) => {
+    } catch (error) {
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Login failed",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginMutation.mutate({ email, password });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   return (
@@ -81,7 +56,9 @@ export default function HospitalLogin() {
           >
             <Building2 className="w-10 h-10 text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-gradient-red">Hospital Portal</h1>
+          <h1 className="text-3xl font-bold text-gradient-red">
+            Hospital Portal
+          </h1>
           <p className="text-red-800 mt-2">Sign in to access your dashboard</p>
         </motion.div>
 
@@ -123,16 +100,20 @@ export default function HospitalLogin() {
 
             <motion.button
               type="submit"
-              disabled={loginMutation.isPending}
+              disabled={isLoggingIn}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full h-14 gradient-red-primary text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loginMutation.isPending ? (
+              {isLoggingIn ? (
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                   />
                   Signing in...

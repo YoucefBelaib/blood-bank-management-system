@@ -1,5 +1,4 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -9,27 +8,14 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-
-interface DashboardStats {
-  donorsByBloodType: { name: string; value: number }[];
-  donorsByLocation: { name: string; value: number }[];
-  totalDonors: number;
-  monthlyDonorStats: { month: string; thisYear: number; lastYear: number }[];
-}
+import { useDashboardStats } from "@/features/statistics";
 
 export default function LineChartComponent() {
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats"],
-    queryFn: async () => {
-      const response = await fetch("/api/dashboard-stats");
-      if (!response.ok) throw new Error("Failed to fetch dashboard stats");
-      return response.json();
-    },
-  });
+  const { stats, isLoading } = useDashboardStats();
 
   const chartData = stats?.monthlyDonorStats || [];
   const maxValue = Math.max(
-    ...chartData.map(d => Math.max(d.thisYear, d.lastYear)),
+    ...chartData.map((d) => Math.max(d.thisYear, d.lastYear)),
     10
   );
 
@@ -44,7 +30,10 @@ export default function LineChartComponent() {
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <AreaChart
+          data={chartData}
+          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+        >
           <defs>
             <linearGradient id="colorThis" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#FCA5A5" stopOpacity={0.35} />
@@ -74,7 +63,7 @@ export default function LineChartComponent() {
           <Tooltip
             formatter={(value: number, name: string) => [
               value,
-              name === "thisYear" ? "This Year" : "Last Year"
+              name === "thisYear" ? "This Year" : "Last Year",
             ]}
             cursor={false}
           />

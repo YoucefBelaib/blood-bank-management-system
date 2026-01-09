@@ -8,42 +8,44 @@ export function createHospitalRoutes(
 ): Router {
   const router = Router();
 
-  // Hospital CRUD
-  router.get("/", asyncHandler(hospitalController.getAll));
-  router.get("/:id", asyncHandler(hospitalController.getById));
-  router.patch(
-    "/:id/status",
-    asyncHandler(requireAuth),
-    asyncHandler(hospitalController.updateStatus)
-  );
-
-  // Hospital Auth
+  // Hospital Auth (must be before /:id to avoid matching "auth" as id)
   router.post("/auth/login", asyncHandler(hospitalController.login));
   router.post("/auth/signup", asyncHandler(hospitalController.signup));
   router.post("/auth/logout", asyncHandler(hospitalController.logout));
   router.get("/auth/me", asyncHandler(hospitalController.getCurrentHospital));
 
-  // Blood Requests (all)
+  // Blood Requests (must be before /:id to avoid matching "requests" as id)
   router.get(
     "/requests/all",
     asyncHandler(hospitalController.getAllBloodRequests)
   );
-
-  // Blood Requests (hospital-specific)
+  router.post(
+    "/requests/public",
+    asyncHandler(hospitalController.createPublicBloodRequest)
+  );
   router.get(
     "/requests",
-    asyncHandler(requireHospitalAuth),
+    requireHospitalAuth,
     asyncHandler(hospitalController.getHospitalBloodRequests)
   );
   router.post(
     "/requests",
-    asyncHandler(requireHospitalAuth),
+    requireHospitalAuth,
     asyncHandler(hospitalController.createBloodRequest)
   );
   router.patch(
     "/requests/:id/status",
-    asyncHandler(requireAuth),
+    requireAuth,
     asyncHandler(hospitalController.updateBloodRequestStatus)
+  );
+
+  // Hospital CRUD (parameterized routes last)
+  router.get("/", asyncHandler(hospitalController.getAll));
+  router.get("/:id", asyncHandler(hospitalController.getById));
+  router.patch(
+    "/:id/status",
+    requireAuth,
+    asyncHandler(hospitalController.updateStatus)
   );
 
   return router;

@@ -57,6 +57,13 @@ export const hospitalsApi = {
     return apiClient.post<BloodRequest>("/hospitals/requests", data);
   },
 
+  // Public blood request (for non-authenticated users)
+  createPublicBloodRequest: (
+    data: CreateBloodRequestInput
+  ): Promise<BloodRequest> => {
+    return apiClient.post<BloodRequest>("/hospitals/requests/public", data);
+  },
+
   updateBloodRequestStatus: (
     id: string,
     status: string

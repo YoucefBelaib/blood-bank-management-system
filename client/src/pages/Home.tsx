@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -20,12 +19,7 @@ import {
   slideInLeft,
   slideInRight,
 } from "@/lib/animations";
-
-interface Statistics {
-  activeDonors: number;
-  totalBloodUnits: number;
-  partnerHospitals: number;
-}
+import { useStatistics } from "@/features/statistics";
 
 function StorySection({
   children,
@@ -55,14 +49,7 @@ function StorySection({
 }
 
 export default function Home() {
-  const { data: stats } = useQuery<Statistics>({
-    queryKey: ["statistics"],
-    queryFn: async () => {
-      const response = await fetch("/api/statistics");
-      if (!response.ok) throw new Error("Failed to fetch statistics");
-      return response.json();
-    },
-  });
+  const { data: stats } = useStatistics();
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">

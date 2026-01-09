@@ -4,4 +4,5 @@ export {
   useHospitalAuth,
   useBloodRequests,
   useHospitalBloodRequests,
+  usePublicBloodRequest,
 } from "./useHospitals";

@@ -102,6 +102,15 @@ export class HospitalController {
     res.status(201).json(request);
   };
 
+  // Public blood request (no hospital auth required)
+  createPublicBloodRequest = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    const request = await this.hospitalService.createBloodRequest(req.body);
+    res.status(201).json(request);
+  };
+
   updateBloodRequestStatus = async (
     req: Request,
     res: Response
